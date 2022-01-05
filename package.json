@@ -1,18 +1,16 @@
 {
   "name": "parse-server-example",
-  "version": "1.4.0",
+  "version": "1.0.0",
   "description": "An example Parse API server using the parse-server module",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ParsePlatform/parse-server-example"
-  },
   "license": "MIT",
   "dependencies": {
-    "express": "4.17.1",
-    "kerberos": "1.1.4",
-    "parse": "2.19.0",
-    "parse-server": "4.5.0"
+    "dotenv": "^10.0.0",
+    "express": "4.17.2",
+    "googleapis": "^92.0.0",
+    "kerberos": "1.1.7",
+    "parse": "^3.4.1",
+    "parse-server": "^4.10.4"
   },
   "scripts": {
     "start": "node index.js",
@@ -27,15 +25,12 @@
     "node": ">=4.3"
   },
   "devDependencies": {
-    "babel-eslint": "10.1.0",
+    "@babel/core": "^7.16.7",
+    "@babel/eslint-parser": "^7.16.5",
     "babel-watch": "7.4.0",
-    "eslint": "7.19.0",
-    "eslint-config-standard": "16.0.2",
-    "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-node": "11.1.0",
-    "eslint-plugin-promise": "4.2.1",
-    "jasmine": "3.6.4",
-    "mongodb-runner": "4.8.1",
+    "eslint": "^8.6.0",
+    "jasmine": "4.0.0",
+    "mongodb-runner": "^4.8.3",
     "nyc": "15.1.0",
     "prettier": "2.2.1"
   }
