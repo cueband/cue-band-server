@@ -30,7 +30,6 @@ const getGoogleToken = async (code) => {
             const authData = {
                 id: usr_info.data.id,
                 email: usr_info.data.email,
-                name: usr_info.data.name,
                 id_token: tokens.id_token,
                 access_token: tokens.access_token,
             };
@@ -45,7 +44,7 @@ router.get('/google-signin', async (req, res, next) => {
     if(req.query.code == undefined)
         return res.sendStatus(404);
     var result = await getGoogleToken(req.query.code);
-    res.redirect("cuebandapp://?access_token="+result.access_token);
+    res.redirect(`cuebandapp://?id=${result.id}&email=${result.email}&id_token=${result.id_token}&access_token=${result.access_token}`);
 });
 
 module.exports = router;
