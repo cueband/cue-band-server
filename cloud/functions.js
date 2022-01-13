@@ -1,3 +1,5 @@
+const niceware = require('niceware')
+
 Parse.Cloud.define('hello', req => {
   //req.log.info(req);
   console.log("why are here?")
@@ -120,3 +122,35 @@ Parse.Cloud.define("signin-google", async (request) => {
 
   return "cuebandapp://?access_token="+result.access_token;
 });
+
+Parse.Cloud.define("generateToken", async (request) => {
+  let tokenString  = null;
+
+  //Check if the token already exists
+  let tokenExists = true;
+  while(tokenExists) {
+    const passphraseList = niceware.generatePassphrase(8);
+    tokenString = passphraseList.join('-')
+    const query = new Parse.Query("Token");
+    query.equalTo("token", tokenString);
+    const results = await query.find();
+    tokenExists = results.length != 0
+  }
+
+  const Token = Parse.Object.extend("Token");
+  const tokenObject = new Token();
+  tokenObject.set("token", tokenString);
+  
+  const numberOfDaysUntilExpire = 7
+  const expireDate = new Date(); 
+  expireDate.setDate(expireDate.getDate() + numberOfDaysUntilExpire);
+  console.log(expireDate);
+  tokenObject.set("expireDate", expireDate);
+  console.log(tokenObject);
+
+  let result = await tokenObject.save();
+  console.log(result);
+
+  return tokenString;
+});
+

@@ -1,13 +1,27 @@
 // Example express application adding the parse-server module to expose Parse
 // compatible API routes.
 
-require('dotenv').config()
-
 const express = require('express');
 const ParseServer = require('parse-server').ParseServer;
 const path = require('path');
 const args = process.argv || [];
 const test = args.some(arg => arg.includes('jasmine'));
+var dotenv = require('dotenv');
+var cors = require('cors');
+
+const result = dotenv.config()
+if (result.error) {
+  throw result.error
+}
+
+const requiredEnvVariables = [process.env.SENDGRID_API_KEY, process.env.DOMAIN_URL, process.env.EMAIL_SENDER, 
+  process.env.CONFIRM_EMAIL_TEMPLATE_ID,  process.env.TOKEN_ERROR_REDIRECT_URL, 
+  process.env.TOKEN_ACTIVATED_REDIRECT_URL, process.env.CONTACT_LIST_NAME];
+
+for(const variable of requiredEnvVariables) {
+  if(variable == undefined)
+    throw Error('Required env variable missing!');
+}
 
 const databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
@@ -32,6 +46,13 @@ const config = {
 
 const app = express();
 
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+var interestRouter = require('./routes/interest');
+app.use(interestRouter);
+
 const signinRoutes = require('./routes/signin');
 app.use(signinRoutes);
 
@@ -55,8 +76,6 @@ app.get('/', function (req, res) {
 app.get('/test', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
 });
-
-
 
 const port = process.env.PORT || 1337;
 if (!test) {
