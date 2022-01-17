@@ -1,4 +1,9 @@
-const niceware = require('niceware')
+const niceware = require('niceware');
+const sgClient = require('@sendgrid/client');
+const sgMail = require('@sendgrid/mail');
+
+sgClient.setApiKey(process.env.SENDGRID_API_KEY);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 Parse.Cloud.define('hello', req => {
   //req.log.info(req);
@@ -154,3 +159,67 @@ Parse.Cloud.define("generateToken", async (request) => {
   return tokenString;
 });
 
+
+Parse.Cloud.define("tokenInfo", async (request) => {
+
+  const tokenString = request.params.token;
+  const query = new Parse.Query("Token");
+  query.equalTo("token", tokenString);
+  const results = await query.find();
+  if(results.length == 0)
+  {
+    console.log("Error - Token not in database!");
+    return {
+      "code": 141,
+      "error": "Invalid Token"
+    };
+  }
+
+  //Get Sendgrid Contact Lists
+  const requestList = {
+    method: 'GET',
+    url: '/v3/marketing/lists'
+  };
+  let [response, body] = await sgClient.request(requestList)
+
+  if(response.statusCode != 200) {
+    console.log('Error getting lists!');
+    return {
+      "code": 141,
+      "error": "Invalid Token"
+    };
+  }
+
+  const consentList = body.result.find(element => element.name ===  process.env.CONTACT_LIST_NAME); 
+  if(consentList == undefined || consentList == null) {
+    console.log('List not found!');
+    return {
+      "code": 141,
+      "error": "Invalid Token"
+    };
+  }
+
+  //Search for token
+  const tokenQuery = {
+    query: `consent_get_involved_study_token LIKE '${tokenString}' AND CONTAINS(list_ids, '${consentList.id}')`
+  }
+
+  const tokenQueryRequest = {
+    method: 'POST',
+    url: '/v3/marketing/contacts/search',
+    body: tokenQuery
+  };
+  let [queryResponse, queryBody] = await sgClient.request(tokenQueryRequest);
+
+  if(queryResponse.statusCode != 200 || queryBody.contact_count == 0) {
+    console.log("Error - Token not found in Sendgrid");
+    return {
+      "code": 141,
+      "error": "Invalid Token"
+    };
+  }
+  return queryBody.result[0];
+},{
+  fields : ['token'],
+  requireUser: false
+});
