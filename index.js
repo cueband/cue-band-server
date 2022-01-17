@@ -87,7 +87,17 @@ if (!test) {
   ParseServer.createLiveQueryServer(httpServer);
 }
 
+const cueingIntervalSchema = require('./schemas/CueingIntervalSchema');
+cueingIntervalSchema.CreateSchema();
+
+const activityLogBlockHeaderSchema = require('./schemas/ActivityLogBlockHeaderSchema');
+activityLogBlockHeaderSchema.CreateSchema();
+
+const ActivityLogBlockSampleSchema = require('./schemas/ActivityLogBlockSampleSchema');
+ActivityLogBlockSampleSchema.CreateSchema();
+
 module.exports = {
   app,
   config,
 };
+
