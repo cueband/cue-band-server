@@ -1,6 +1,7 @@
 const niceware = require('niceware');
 const sgClient = require('@sendgrid/client');
 const sgMail = require('@sendgrid/mail');
+var flatten = require('flat')
 
 sgClient.setApiKey(process.env.SENDGRID_API_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -175,6 +176,8 @@ Parse.Cloud.define("tokenInfo", async (request) => {
     };
   }
 
+  var expireDate = results[0].get("expireDate");
+
   //Get Sendgrid Contact Lists
   const requestList = {
     method: 'GET',
@@ -218,6 +221,11 @@ Parse.Cloud.define("tokenInfo", async (request) => {
       "error": "Invalid Token"
     };
   }
+
+
+  queryBody.result[0]['expireDate'] = expireDate
+
+  console.log(queryBody.result[0]);
   return queryBody.result[0];
 },{
   fields : ['token'],

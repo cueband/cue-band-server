@@ -4,6 +4,6 @@ const router = express.Router();
 
 const signInController = require('../controllers/oAuthSignIn');
 
-router.post('/google-signin', signInController.getGoogleToken);
+router.get('/google-signin', signInController.getGoogleToken);
 
 module.exports = router;
