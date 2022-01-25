@@ -103,6 +103,15 @@ ConsentSchema.CreateSchema();
 const StudyDataSchema = require('./schemas/StudyDataSchema');
 StudyDataSchema.CreateSchema();
 
+const DiaryEntrySchema = require('./schemas/DiaryEntrySchema');
+DiaryEntrySchema.CreateSchema();
+
+const FeedbackEntrySchema = require('./schemas/FeedbackEntrySchema');
+FeedbackEntrySchema.CreateSchema();
+
+const DeliveryAddressSchema = require('./schemas/DeliveryAddressSchema');
+DeliveryAddressSchema .CreateSchema();
+
 module.exports = {
   app,
   config,
