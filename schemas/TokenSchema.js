@@ -7,7 +7,7 @@ exports.CreateSchema = async() => {
     } catch {
         console.log("Token schema not found. Creating it now.");
         schema
-        .addNumber("token")
+        .addString("token")
         .addDate("expireDate")
         await schema.save({ useMasterKey: true });
     }
