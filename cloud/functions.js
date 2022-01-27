@@ -222,7 +222,6 @@ Parse.Cloud.define("tokenInfo", async (request) => {
     };
   }
 
-
   queryBody.result[0]['expireDate'] = expireDate
 
   console.log(queryBody.result[0]);
@@ -234,6 +233,6 @@ Parse.Cloud.define("tokenInfo", async (request) => {
 
 Parse.Cloud.define("submitAssessment", async (request) => {
   console.log("submitAssessment");
-
+  console.log(request);
 
 });

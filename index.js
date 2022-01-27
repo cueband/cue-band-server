@@ -115,6 +115,9 @@ DeliveryAddressSchema .CreateSchema();
 const TokenSchema = require('./schemas/TokenSchema');
 TokenSchema.CreateSchema();
 
+const AssessmentSchema = require('./schemas/AssessmentSchema');
+AssessmentSchema.CreateSchema();
+
 module.exports = {
   app,
   config,
