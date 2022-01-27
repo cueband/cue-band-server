@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  caddy:      
+    build: ./caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+  web:
+    build:
+      context: ./
+    volumes:
+      - .:/src
+    command: sh -c "npm install && npm run start"
+    ports:
+      - "1337:1337"
+    environment:
+      NODE_ENV: production
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
