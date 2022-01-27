@@ -197,8 +197,10 @@ activateContact = async(contact, listId) => {
     const body = await response.json();
     
     const token = body.result;
-    console.log("New token" + token);
-   
+    console.log("New token", token);
+    console.log(response);
+    console.log(body);
+
     const custom_fields = {}
     custom_fields[customFieldsIds["consent_get_involved_activated"]] = "true";
     custom_fields[customFieldsIds["consent_get_involved_study_token"]] = token;
