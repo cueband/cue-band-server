@@ -231,3 +231,9 @@ Parse.Cloud.define("tokenInfo", async (request) => {
   fields : ['token'],
   requireUser: false
 });
+
+Parse.Cloud.define("submitAssessment", async (request) => {
+  console.log("submitAssessment");
+
+
+});

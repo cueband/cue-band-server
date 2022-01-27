@@ -14,6 +14,7 @@ exports.CreateSchema = async() => {
         .addString("previousState")
         .addDate("serverLastUpdate")
         .addDate("clientLastUpdate")
+        .addBoolean("cueingEnabled")
 
         //AppStartedFirstTime
         .addDate("appStartedFirstTimeDateStarted")
@@ -109,6 +110,7 @@ exports.CreateSchema = async() => {
         .addBoolean("waitingForDeviceReached")
         .addString("waitingForDeviceProgressCondition")
         .addBoolean("waitingForDeviceDone")
+        .addString("deliveryProgress")
 
         //Assessment1
         .addDate("assessment1DateStarted")
