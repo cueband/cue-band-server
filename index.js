@@ -112,6 +112,9 @@ FeedbackEntrySchema.CreateSchema();
 const DeliveryAddressSchema = require('./schemas/DeliveryAddressSchema');
 DeliveryAddressSchema .CreateSchema();
 
+const TokenSchema = require('./schemas/TokenSchema');
+TokenSchema.CreateSchema();
+
 module.exports = {
   app,
   config,
