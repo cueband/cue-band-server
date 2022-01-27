@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:16
 
 RUN mkdir parse
 
@@ -6,9 +6,9 @@ ADD . /parse
 WORKDIR /parse
 RUN npm install
 
-ENV APP_ID setYourAppId
-ENV MASTER_KEY setYourMasterKey
-ENV DATABASE_URI setMongoDBURI
+#ENV APP_ID setYourAppId
+#ENV MASTER_KEY setYourMasterKey
+#ENV DATABASE_URI setMongoDBURI
 
 # Optional (default : 'parse/cloud/main.js')
 # ENV CLOUD_CODE_MAIN cloudCodePath
