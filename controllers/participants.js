@@ -187,17 +187,17 @@ activateContact = async(contact, listId) => {
     const options = {
         method: 'POST',
         headers: {
-            'X-Parse-Application-Id': "myAppId",
-            "X-Parse-REST-API-Key": "test",
+            'X-Parse-Application-Id': `${process.env.APP_ID}`,
+            "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
             "Content-Type": "application/json"
         },            
     }
 
-    const response = await fetch('http://localhost:1337/parse/functions/generateToken', options);
+    const response = await fetch(`${process.env.SERVER_URL}/functions/generateToken`, options);
     const body = await response.json();
     
     const token = body.result;
-    console.log(token);
+    console.log("New token" + token);
    
     const custom_fields = {}
     custom_fields[customFieldsIds["consent_get_involved_activated"]] = "true";
