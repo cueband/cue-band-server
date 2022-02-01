@@ -58,7 +58,7 @@ const signinRoutes = require('./routes/signin');
 app.use(signinRoutes);
 
 // Serve static assets from the /public folder
-app.use('/public', express.static(path.join(__dirname, '/public')));
+app.use('/', express.static(path.join(__dirname, '/public')));
 
 // Serve the Parse API on the /parse URL prefix
 const mountPath = process.env.PARSE_MOUNT || '/parse';
@@ -74,9 +74,16 @@ app.get('/', function (req, res) {
 
 // There will be a test page available on the /test path of your server url
 // Remove this before launching your app
+/*
 app.get('/test', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/test.html'));
 });
+*/
+
+app.get('/assessment', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/assessment.html'));
+});
+
 
 const port = process.env.PORT || 1337;
 if (!test) {

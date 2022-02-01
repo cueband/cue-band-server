@@ -290,8 +290,8 @@ Parse.Cloud.define("submitAssessment", async (request) => {
 
 Parse.Cloud.define("checkAssessmentToken", async (request) => {
 
-  const assesmentNumber = request.params.assessmentNumber;
-  if(assesmentNumber == null) {
+  const assessmentNumber = request.params.assessmentNumber;
+  if(assessmentNumber == null) {
     console.log("Error - Assessment Number missing");
     return {
       "code": 141,
@@ -307,10 +307,9 @@ Parse.Cloud.define("checkAssessmentToken", async (request) => {
       "error": " Assessment Token missing"
     };
   }
-
+  
   const query = new Parse.Query("StudyData");
-  query.equalTo(`assessment${assesmentNumber}Key`, token);
-  console.log(`assessment${assesmentNumber}Key`, token);
+  query.equalTo(`assessment${assessmentNumber}Key`, token);
   const results = await query.find({useMasterKey:true});
   if(results.length == 0)
   {
