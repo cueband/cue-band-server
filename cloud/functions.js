@@ -235,4 +235,91 @@ Parse.Cloud.define("submitAssessment", async (request) => {
   console.log("submitAssessment");
   console.log(request);
 
+  console.log("token", request.params.token);
+  console.log("assessmentNumber", request.params.assessmentNumber)
+  console.log("data", request.params.data)
+
+  const Assessment = Parse.Object.extend("Assessment");
+  const assessmentObject = new Assessment();
+  assessmentObject.set("token", request.params.token);
+  assessmentObject.set("assessmentNumber", Number(request.params.assessmentNumber));
+  assessmentObject.set("romps1", Number(request.params.data.romps1));
+  assessmentObject.set("romps2", Number(request.params.data.romps2));
+  assessmentObject.set("romps3", Number(request.params.data.romps3));
+  assessmentObject.set("romps4", Number(request.params.data.romps4));
+  assessmentObject.set("romps5", Number(request.params.data.romps5));
+  assessmentObject.set("romps6", Number(request.params.data.romps6));
+  assessmentObject.set("romps7", Number(request.params.data.romps7));
+  assessmentObject.set("romps8", Number(request.params.data.romps8));
+  assessmentObject.set("romps9", Number(request.params.data.romps9));
+  assessmentObject.set("updrs22", Number(request.params.data.updrs22));
+  assessmentObject.set("nmsqDepressionfrequency", request.params.data.nmsqdepressionfrequency);
+  assessmentObject.set("nmsqDepressionseverity", request.params.data.nmsqdepressionseverity);
+  assessmentObject.set("nmsqAnxietyfrequency", request.params.data.nmsqanxietyfrequency);
+  assessmentObject.set("nmsqAnxietyseverity", request.params.data.nmsqanxietyfrequency);
+  assessmentObject.set("nmsqApathyfrequency", request.params.data.nmsqanxietyseverity);
+  assessmentObject.set("nmsqApathyseverity", request.params.data.nmsqapathyseverity);
+  assessmentObject.set("nmsqPsychosisfrequency", request.params.data.nmsqpsychosisfrequency);
+  assessmentObject.set("nmsqPsychosisseverity", request.params.data.nmsqpsychosisseverity);
+  assessmentObject.set("nmsqImpulsecontrolandrelateddisordersfrequency", request.params.data.nmsqimpulsecontrolandrelateddisordersfrequency);
+  assessmentObject.set("nmsqImpulsecontrolandrelateddisordersseverity", request.params.data.nmsqimpulsecontrolandrelateddisordersseverity);
+  assessmentObject.set("nmsqCognitionfrequency", request.params.data.nmsqcognitionfrequency);
+  assessmentObject.set("nmsqCognitionseverity", request.params.data.nmsqcognitionseverity);
+  assessmentObject.set("nmsqOrthostatichypotensionfrequency", request.params.data.nmsqorthostatichypotensionfrequency);
+  assessmentObject.set("nmsqOrthostatichypotensionseverity", request.params.data.nmsqorthostatichypotensionseverity);
+  assessmentObject.set("nmsqUrinaryfrequency", request.params.data.nmsqurinaryfrequency);
+  assessmentObject.set("nmsqUrinaryseverity", request.params.data.nmsqurinaryseverity);
+  assessmentObject.set("nmsqSexualfrequency", request.params.data.nmsqsexualfrequency);
+  assessmentObject.set("nmsqSexualseverity", request.params.data.nmsqsexualseverity);
+  assessmentObject.set("nmsqGastrointestinalfrequency", request.params.data.nmsqgastrointestinalfrequency);
+  assessmentObject.set("nmsqGastrointestinalseverity", request.params.data.nmsqgastrointestinalseverity);
+  assessmentObject.set("nmsqSleepandwakefulnessfrequency", request.params.data.nmsqsleepandwakefulnessfrequency);
+  assessmentObject.set("nmsqSleepandwakefulnessseverity", request.params.data.nmsqsleepandwakefulnessseverity);
+  assessmentObject.set("nmsqPainfrequency", request.params.data.nmsqpainfrequency);
+  assessmentObject.set("nmsqPainseverity", request.params.data.nmsqpainseverity);
+  assessmentObject.set("nmsqOtherfrequency1", request.params.data.nmsqotherfrequency1);
+  assessmentObject.set("nmsqOtherfrequency2", request.params.data.nmsqotherfrequency2);
+  assessmentObject.set("nmsqOtherseverity", request.params.data.nmsqotherseverity);
+  assessmentObject.set("pdq8", request.params.data.pdq8);
+
+  console.log(assessmentObject);
+
+  let result = await assessmentObject.save();
+  return result;
+});
+
+Parse.Cloud.define("checkAssessmentToken", async (request) => {
+
+  const assesmentNumber = request.params.assessmentNumber;
+  if(assesmentNumber == null) {
+    console.log("Error - Assessment Number missing");
+    return {
+      "code": 141,
+      "error": " Assessment Number missing"
+    };
+  }
+
+  const token = request.params.token;
+  if(token == null) {
+    console.log("Error - Assessment Token missing");
+    return {
+      "code": 141,
+      "error": " Assessment Token missing"
+    };
+  }
+
+  const query = new Parse.Query("StudyData");
+  query.equalTo(`assessment${assesmentNumber}Key`, token);
+  console.log(`assessment${assesmentNumber}Key`, token);
+  const results = await query.find({useMasterKey:true});
+  if(results.length == 0)
+  {
+    console.log("Error - Invalid Token");
+    return {
+      "code": 141,
+      "error": "Invalid Token"
+    };
+  }
+
+  return "found";
 });
