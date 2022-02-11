@@ -84,6 +84,10 @@ app.get('/assessment', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/assessment.html'));
 });
 
+app.get('/consent', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/consent.html'));
+});
+
 
 const port = process.env.PORT || 1337;
 if (!test) {
