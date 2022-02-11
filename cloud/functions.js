@@ -307,7 +307,7 @@ Parse.Cloud.define("checkAssessmentToken", async (request) => {
       "error": " Assessment Token missing"
     };
   }
-  
+
   const query = new Parse.Query("StudyData");
   query.equalTo(`assessment${assessmentNumber}Key`, token);
   const results = await query.find({useMasterKey:true});
@@ -321,4 +321,66 @@ Parse.Cloud.define("checkAssessmentToken", async (request) => {
   }
 
   return "found";
+});
+
+Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
+  console.log("submitConsentAndDemographics");
+
+  console.log("token", request.params.token);
+  console.log("data", request.params.data);
+
+  const Consent = Parse.Object.extend("Consent");
+  const consentObject = new Consent();
+  consentObject.set("token", request.params.token);
+  consentObject.set("question1Answer", request.params.data.c1);
+  consentObject.set("question2Answer", request.params.data.c2);
+  consentObject.set("question3Answer", request.params.data.c3);
+  consentObject.set("question4Answer", request.params.data.c4);
+  consentObject.set("question5Answer", request.params.data.c5);
+  consentObject.set("question6Answer", request.params.data.c6);
+  consentObject.set("question7Answer", request.params.data.c7);
+  consentObject.set("question8Answer", request.params.data.c8);
+  consentObject.set("question9Answer", request.params.data.c9);
+  consentObject.set("name", request.params.data.c10);
+
+  const consentObjectACL = new Parse.ACL();
+  consentObjectACL .setPublicReadAccess(false);
+  consentObject.setACL(consentObjectACL);
+
+  let resultConsentObjectSave = await consentObject.save();
+  if(resultConsentObjectSave.code != null)
+    return resultConsentObjectSave;
+
+  const DemographicsData = Parse.Object.extend("DemographicsData");
+  const demographicsDataObject = new DemographicsData();
+  demographicsDataObject.set("token", request.params.token);
+  demographicsDataObject.set("ageRange", request.params.data.f1);
+  demographicsDataObject.set("liveOnUk", request.params.data.f2);
+
+  if(request.params.data.f3 == "White") {
+    demographicsDataObject.set("ethnicity", request.params.data["white-ethnic-groups"]["white-ethnic-groups"]);
+  } else if (request.params.data.f3 == "Mixed or Multiple ethnic groups") {
+    demographicsDataObject.set("ethnicity", request.params.data["mixed-ethnic-groups"]["mixed-ethnic-groups"]);
+  } else if (request.params.data.f3 == "Asian or Asian British") {
+    demographicsDataObject.set("ethnicity", request.params.data["asian-ethnic-groups"]["asian-ethnic-groups"]);
+  } else if (request.params.data.f3 == "Black, African, Caribbean or Black British") {
+    demographicsDataObject.set("ethnicity", request.params.data["black-ethnic-groups"]["black-ethnic-groups"]);
+  } else if (request.params.data.f3 == "Other ethnic group") {
+    demographicsDataObject.set("ethnicity", request.params.data["other-ethnic-groups"]["other-ethnic-groups"]);
+  } else if (request.params.data.f3 == "Prefer not to say") {
+    demographicsDataObject.set("ethnicity", request.params.data.f3);
+  }
+
+  if(request.params.data.f4 == "Not Listed") {
+    demographicsDataObject.set("gender", request.params.data["gender-not-listed"]["gender-not-listed"]);
+  } else {
+    demographicsDataObject.set("gender", request.params.data.f4);
+  }
+
+  const demographicsDataACL = new Parse.ACL();
+  demographicsDataACL.setPublicReadAccess(false);
+  demographicsDataObject.setACL(demographicsDataACL);
+
+  let result = await demographicsDataObject.save();
+  return result;
 });

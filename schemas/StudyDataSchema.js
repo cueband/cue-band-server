@@ -15,6 +15,8 @@ exports.CreateSchema = async() => {
         .addDate("serverLastUpdate")
         .addDate("clientLastUpdate")
         .addBoolean("cueingEnabled")
+        .addString("cueingMethod1")
+        .addString("cueingMethod2")
 
         //AppStartedFirstTime
         .addDate("appStartedFirstTimeDateStarted")

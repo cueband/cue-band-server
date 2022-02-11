@@ -107,6 +107,9 @@ ActivityLogBlockSampleSchema.CreateSchema();
 const ConsentSchema = require('./schemas/ConsentSchema');
 ConsentSchema.CreateSchema();
 
+const DemographicsDataSchema = require('./schemas/DemographicsDataSchema');
+DemographicsDataSchema.CreateSchema();
+
 const StudyDataSchema = require('./schemas/StudyDataSchema');
 StudyDataSchema.CreateSchema();
 
