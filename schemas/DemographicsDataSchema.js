@@ -7,7 +7,7 @@ exports.CreateSchema = async() => {
     } catch {
         console.log("DemographicsData schema not found. Creating it now.");
         schema
-        .addNumber("token")
+        .addString("token")
         .addString("ageRange")
         .addString("liveOnUk")
         .addString("ethnicity")

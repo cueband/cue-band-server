@@ -132,6 +132,9 @@ TokenSchema.CreateSchema();
 const AssessmentSchema = require('./schemas/AssessmentSchema');
 AssessmentSchema.CreateSchema();
 
+const PostSchema = require('./schemas/PostSchema');
+PostSchema.CreateSchema();
+
 module.exports = {
   app,
   config,

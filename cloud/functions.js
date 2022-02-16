@@ -384,3 +384,25 @@ Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
   let result = await demographicsDataObject.save();
   return result;
 });
+
+Parse.Cloud.define("getPosts", async (request) => {
+  const query = new Parse.Query("Post");
+  query.equalTo("enabled", true);
+  const results = await query.find({useMasterKey:true});
+  
+  const posts = [];
+  results.forEach(element => {
+    const post = {
+      id: element.id,
+      title: element.get("title"),
+      content: element.get("content"),
+      image: element.get("image"),
+      buttonName: element.get("buttonName"),
+      url: element.get("url"),
+      enabled: element.get("enabled"),
+      branch: element.get("branch"),
+    }
+    posts.push(post);
+  });
+  return posts;
+});

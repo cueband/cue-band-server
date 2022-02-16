@@ -7,7 +7,7 @@ exports.CreateSchema = async() => {
     } catch {
         console.log("Consent schema not found. Creating it now.");
         schema
-        .addNumber("token")
+        .addString("token")
         .addString("question1Answer")
         .addString("question2Answer")
         .addString("question3Answer")
