@@ -88,6 +88,9 @@ app.get('/consent', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/consent.html'));
 });
 
+app.get('/firmware', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/firmware'));
+});
 
 const port = process.env.PORT || 1337;
 if (!test) {
@@ -134,6 +137,12 @@ AssessmentSchema.CreateSchema();
 
 const PostSchema = require('./schemas/PostSchema');
 PostSchema.CreateSchema();
+
+const AppFeedbackSchema = require('./schemas/AppFeedbackSchema');
+AppFeedbackSchema.CreateSchema();
+
+const FirmwareReleaseSchema = require('./schemas/FirmwareReleaseSchema');
+FirmwareReleaseSchema.CreateSchema();
 
 module.exports = {
   app,

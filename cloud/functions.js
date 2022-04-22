@@ -406,3 +406,47 @@ Parse.Cloud.define("getPosts", async (request) => {
   });
   return posts;
 });
+
+Parse.Cloud.define("sendAppFeedback", async (request) => {
+
+  const AppFeedback = Parse.Object.extend("AppFeedback");
+  const appFeedbackObject = new AppFeedback();
+  appFeedbackObject.set("text", request.params.text);
+  appFeedbackObject.set("recordedTime", request.params.recordedTime);
+  appFeedbackObject.set("username", request.params.username);
+  appFeedbackObject.set("rating", request.params.rating);
+  appFeedbackObject.set("deviceType", request.params.deviceType);
+
+  const appFeedbackObjectACL = new Parse.ACL();
+  appFeedbackObjectACL.setPublicReadAccess(false);
+  appFeedbackObject.setACL(appFeedbackObjectACL);
+
+  let resultAppFeedbackObjectSave = await appFeedbackObject.save();
+  return resultAppFeedbackObjectSave != null;
+});
+
+Parse.Cloud.define("getLatestFirmwareRelease", async (request) => {
+
+  const query = new Parse.Query("FirmwareRelease");
+  query.equalTo("active", true);
+  const results = await query.find({useMasterKey:true});
+
+  console.log(results);
+
+  if(results.length == 0) {
+    return {};
+  }
+
+  const firmwareRelease = {
+    id: results[0].get("id"),
+    createdAt: results[0].get("createdAt"),
+    downloadLink: results[0].get("downloadLink"),
+    version: results[0].get("version"),
+    active: results[0].get("active"),
+    text: results[0].get("text")
+  };
+
+  console.log(firmwareRelease);
+
+  return firmwareRelease ;
+});

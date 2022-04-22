@@ -6,13 +6,13 @@ exports.CreateSchema = async () => {
     } catch {
         console.log("ActivityLogBlockSample schema not found. Creating it now.");
         schema
-        .addNumber("id")
+        .addNumber("localId")
         .addNumber("events")
         .addNumber("promptsSteps")
         .addNumber("meanFilteredSvmmo")
         .addNumber("meanSvmmo")
         .addNumber("blockId")
-        .addPointer('userId', '_User');
+        .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }
 }

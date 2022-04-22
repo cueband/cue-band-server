@@ -6,7 +6,8 @@ exports.CreateSchema = async () => {
     } catch {
         console.log("ActivityLogBlockHeader schema not found. Creating it now.");
         schema
-        .addNumber("id")
+        .addNumber("localId")
+        .addNumber("blockId")
         .addNumber("blockType")
         .addNumber("blockLength")
         .addNumber("format")
@@ -19,7 +20,7 @@ exports.CreateSchema = async () => {
         .addNumber("accelerometer")
         .addNumber("firmware")
         .addNumber("checksum")
-        .addPointer('userId', '_User');
+        .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }
 }

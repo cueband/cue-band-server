@@ -13,7 +13,7 @@ exports.CreateSchema = async () => {
         .addNumber("endTimeMinutes")
         .addNumber("duration")
         .addNumber("weekDay")
-        .addPointer('userId', '_User');
+        .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }
 }
