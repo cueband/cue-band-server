@@ -11,6 +11,8 @@ exports.CreateSchema = async() => {
         .addString("ageRange")
         .addString("liveOnUk")
         .addString("ethnicity")
+        .addString("ethnicity")
+        .addString("ethnicGroup")
         .addString("gender")
         await schema.save({ useMasterKey: true });
     }

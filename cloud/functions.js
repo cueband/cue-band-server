@@ -356,19 +356,20 @@ Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
   demographicsDataObject.set("token", request.params.token);
   demographicsDataObject.set("ageRange", request.params.data.f1);
   demographicsDataObject.set("liveOnUk", request.params.data.f2);
+  demographicsDataObject.set("ethnicity", request.params.data.f3);
 
   if(request.params.data.f3 == "White") {
-    demographicsDataObject.set("ethnicity", request.params.data["white-ethnic-groups"]["white-ethnic-groups"]);
+    demographicsDataObject.set("ethnicGroup", request.params.data["white-ethnic-groups"]["white-ethnic-groups"]);
   } else if (request.params.data.f3 == "Mixed or Multiple ethnic groups") {
-    demographicsDataObject.set("ethnicity", request.params.data["mixed-ethnic-groups"]["mixed-ethnic-groups"]);
+    demographicsDataObject.set("ethnicGroup", request.params.data["mixed-ethnic-groups"]["mixed-ethnic-groups"]);
   } else if (request.params.data.f3 == "Asian or Asian British") {
-    demographicsDataObject.set("ethnicity", request.params.data["asian-ethnic-groups"]["asian-ethnic-groups"]);
+    demographicsDataObject.set("ethnicGroup", request.params.data["asian-ethnic-groups"]["asian-ethnic-groups"]);
   } else if (request.params.data.f3 == "Black, African, Caribbean or Black British") {
-    demographicsDataObject.set("ethnicity", request.params.data["black-ethnic-groups"]["black-ethnic-groups"]);
+    demographicsDataObject.set("ethnicGroup", request.params.data["black-ethnic-groups"]["black-ethnic-groups"]);
   } else if (request.params.data.f3 == "Other ethnic group") {
-    demographicsDataObject.set("ethnicity", request.params.data["other-ethnic-groups"]["other-ethnic-groups"]);
+    demographicsDataObject.set("ethnicGroup", request.params.data["other-ethnic-groups"]["other-ethnic-groups"]);
   } else if (request.params.data.f3 == "Prefer not to say") {
-    demographicsDataObject.set("ethnicity", request.params.data.f3);
+    demographicsDataObject.set("ethnicGroup", request.params.data.f3);
   }
 
   if(request.params.data.f4 == "Not Listed") {
