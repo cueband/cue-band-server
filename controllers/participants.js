@@ -73,10 +73,10 @@ checkIfContactExists = async(email, listId) => {
     }
 }*/
 
-checkIfContactExists = async(email, listId) => {
+checkIfContactExists = async(email) => {
 
     try {
-        console.log(`${new Date().toUTCString()} checkIfContactExists ${email} ${listId}`);
+        console.log(`${new Date().toUTCString()} checkIfContactExists ${email}`);
 
         const options = {
             method: 'GET',
@@ -144,6 +144,63 @@ getCustomFieldsIds = async() => {
 }
 
 
+/*
+sendNewContactToSendgrid = async(contact, activationToken, listId, email, formalTrial, smartphoneType, study) => {
+
+    console.log(`${new Date().toUTCString()} sendNewContactToSendgrid ${contact}, ${activationToken}, ${listId}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
+
+    let customFieldsIds = await getCustomFieldsIds();
+
+    if(customFieldsIds == null) {
+        return false;
+    }
+        
+    const custom_fields = {}
+    custom_fields[customFieldsIds['consent_get_involved_formal_trial']] = formalTrial;
+    custom_fields[customFieldsIds['consent_get_involved_smartphone_type']] = smartphoneType;
+    custom_fields[customFieldsIds['consent_get_involved_study']] = study;
+
+    if(contact == null || 
+        (contact != null && (contact.activated == 'false' || contact.activated == '' || contact.activated == null || contact.custom_fields.consent_get_involved_activated == undefined))) {
+        custom_fields[customFieldsIds['consent_get_involved_activation_token']] = activationToken;
+        custom_fields[customFieldsIds['consent_get_involved_activated']] = 'false';
+    }
+
+    //Send new contact to Sendgrid
+    const data = {
+        list_ids: [listId],
+        contacts: [
+            {
+                email,
+                custom_fields
+            }
+        ],
+    }
+
+    const request = {
+        method: 'PUT',
+        url: '/v3/marketing/contacts',
+        body: data,
+    };
+
+    try {
+        let [responseContact, bodyContact] = await sgClient.request(request)
+        if(responseContact.statusCode == 202 || responseContact.statusCode == 200) {
+            console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Saved contact`);
+            return true;
+        } else {
+            console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Error on contact saving`);
+            return false;
+        }
+    } catch (error) {
+        console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Error on contact saving ${error}`);
+        console.log(error.response.body.errors);
+        return false;
+    }
+}
+
+*/
+
 sendNewContactToServer = async(contact, activationToken, email, formalTrial, smartphoneType, study) => {
 
     console.log(`${new Date().toUTCString()} sendNewContactToServer ${activationToken}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
@@ -193,27 +250,9 @@ sendNewContactToServer = async(contact, activationToken, email, formalTrial, sma
     }
 }
 
-sendNewContactToSendgrid = async(contact, activationToken, listId, email, formalTrial, smartphoneType, study) => {
+sendNewContactToSendgrid = async(email, listId) => {
 
-    console.log(`${new Date().toUTCString()} sendNewContactToSendgrid ${contact}, ${activationToken}, ${listId}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
-
-    let customFieldsIds = await getCustomFieldsIds();
-
-    if(customFieldsIds == null) {
-        return false;
-    }
-        
-
-    const custom_fields = {}
-    custom_fields[customFieldsIds['consent_get_involved_formal_trial']] = formalTrial;
-    custom_fields[customFieldsIds['consent_get_involved_smartphone_type']] = smartphoneType;
-    custom_fields[customFieldsIds['consent_get_involved_study']] = study;
-
-    if(contact == null || 
-        (contact != null && (contact.activated == 'false' || contact.activated == '' || contact.activated == null || contact.custom_fields.consent_get_involved_activated == undefined))) {
-        custom_fields[customFieldsIds['consent_get_involved_activation_token']] = activationToken;
-        custom_fields[customFieldsIds['consent_get_involved_activated']] = 'false';
-    }
+    console.log(`${new Date().toUTCString()} sendNewContactToSendgrid ${email} ${listId}`);
 
     //Send new contact to Sendgrid
     const data = {
@@ -221,7 +260,6 @@ sendNewContactToSendgrid = async(contact, activationToken, listId, email, formal
         contacts: [
             {
                 email,
-                custom_fields
             }
         ],
     }
@@ -285,9 +323,9 @@ sendConfirmationEmail = async(email, activationToken) => {
 }
 
 
-searchToken = async(token, listId) => {
+searchToken = async(token) => {
 
-    console.log(`${new Date().toUTCString()} searchToken ${token}, ${listId}`);
+    console.log(`${new Date().toUTCString()} searchToken ${token}`);
     try {
 
         const options = {
@@ -354,6 +392,8 @@ searchToken = async(token, listId) => {
     }
 }*/
 
+
+/*
 activateContact = async(contact, listId) => {
 
     console.log(`${new Date().toUTCString()} activateContact ${contact}, ${listId}`);
@@ -414,6 +454,70 @@ activateContact = async(contact, listId) => {
         return false;
     }
 }
+*/
+
+activateContact = async(contact) => {
+
+    console.log(`${new Date().toUTCString()} activateContact ${JSON.stringify(contact)}`);
+
+    try {
+
+        if(contact == null || contact == undefined) {
+            console.log(`${new Date().toUTCString()} activateContact not contact given error`);
+            return false;
+        }
+       
+        //Get a token from the parse server
+        const optionsGenerateToken = {
+            method: 'POST',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },            
+        }
+    
+        const responseGenerateToken = await fetch(`${process.env.SERVER_URL}/functions/generateToken`, optionsGenerateToken);
+        if(!responseGenerateToken.ok) {
+            console.log(`${new Date().toUTCString()} activateContact generateToken error`);
+            console.log(`${responseGenerateToken.body}`);
+            return false
+        }
+        const body = await responseGenerateToken.json(); 
+        const token = body.result;
+       
+        //Save updated contact
+        const optionsUpdateContact = {
+            method: 'PUT',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                studyToken: token,
+                activated: true
+            })
+        }
+
+        const urlUpdateContact = `${process.env.SERVER_URL}/classes/StudyInterest/${contact.objectId}`;
+        console.log(urlUpdateContact)
+    
+        const responseUpdateContact = await fetch(urlUpdateContact, optionsUpdateContact);
+        if(!responseUpdateContact.ok) {
+            console.log(`${new Date().toUTCString()} activateContact exception Error on contact updating`);
+            console.log(JSON.stringify(responseUpdateContact));
+            return false;
+        }
+    
+        console.log(`${new Date().toUTCString()} activateContact Contact activated (${contact.email}).`);
+        return true;
+       
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} activateContact exception ${error}`);
+        return false;
+    }
+}
 
 exports.postSignUp = async (req, res, next) => {
 
@@ -426,30 +530,13 @@ exports.postSignUp = async (req, res, next) => {
             return res.status(422).json({ errors: errors.array() });
         }
 
-        //Get Sendgrid Contact Lists
-        var consentList = null;
-        var gotConsentList = false; 
-        var consentListAttempts = 0;
-        while(!gotConsentList && consentListAttempts < 4) {
-            consentList = await getSendgridContactList();
-            if(consentList != null && consentList.error != null) {
-                console.log(`${new Date().toUTCString()} postSignUp Error getting contact list ${consentListAttempts}`);
-                consentListAttempts++;
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } else {
-                gotConsentList = true;
-            }
-        }
-        if(!gotConsentList) {
-            return res.status(500).send('Error Signing Up');
-        }
-       
+    
         //Check if contact already exists and it's activated.
         var contact = null;
         var gotCheckIfContactExists = false;
         var checkIfContactExistsAttempts = 0;
         while(!gotCheckIfContactExists && checkIfContactExistsAttempts  < 4) {
-            contact = await checkIfContactExists(req.body["email"], consentList.id);
+            contact = await checkIfContactExists(req.body["email"]);
             if(contact != null && contact.error != null) {
                 console.log(`${new Date().toUTCString()} postSignUp Check If Contact Exists failed ${req.body["email"]} ${checkIfContactExistsAttempts}`);
                 checkIfContactExistsAttempts++;
@@ -464,23 +551,43 @@ exports.postSignUp = async (req, res, next) => {
 
         console.log(JSON.stringify(contact));
 
+        if(contact == null) {
+            //Get Sendgrid Contact Lists
+            var consentList = null;
+            var gotConsentList = false; 
+            var consentListAttempts = 0;
+            while(!gotConsentList && consentListAttempts < 4) {
+                consentList = await getSendgridContactList();
+                if(consentList != null && consentList.error != null) {
+                    console.log(`${new Date().toUTCString()} postSignUp Error getting contact list ${consentListAttempts}`);
+                    consentListAttempts++;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } else {
+                    gotConsentList = true;
+                }
+            }
+            if(!gotConsentList) {
+                return res.status(500).send('Error Signing Up');
+            }
+
+            //Send new contact to Sendgrid
+            var sendSuccessful = false;
+            var sendNewContactToSendgridAttemps = 0;
+            while(!sendSuccessful && sendNewContactToSendgridAttemps  < 4) {
+                sendSuccessful = await sendNewContactToSendgrid(req.body["email"], consentList.id);
+                if(!sendSuccessful) {
+                    console.log(`${new Date().toUTCString()} postSignUp Save contact failed ${req.body["email"]}`);
+                    sendNewContactToSendgridAttemps++;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } 
+            }
+            if(!sendSuccessful) {
+                return res.status(500).send('Error Signing Up');
+            }
+        }
+        
         //Generate activation token
         const activationToken = crypto.randomBytes(64).toString('hex');
-
-        //Send new contact to Sendgrid
-        var sendSuccessful = false;
-        var sendNewContactToSendgridAttemps = 0;
-        while(!sendSuccessful && sendNewContactToSendgridAttemps  < 4) {
-            sendSuccessful = await sendNewContactToSendgrid(contact, activationToken, consentList.id, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
-            if(!sendSuccessful) {
-                console.log(`${new Date().toUTCString()} postSignUp Save contact failed ${req.body["email"]}`);
-                sendNewContactToSendgridAttemps++;
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } 
-        }
-        if(!sendSuccessful) {
-            return res.status(500).send('Error Signing Up');
-        }
 
         //Send new contact to server
         var sendServerSuccessful = await sendNewContactToServer(contact, activationToken, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
@@ -523,6 +630,7 @@ exports.getConfirmEmail = async (req, res, next) => {
         }
 
         //Get Sendgrid Contact Lists
+        /*
         var consentList = null;
         var gotConsentList = false; 
         var consentListAttempts = 0;
@@ -539,14 +647,14 @@ exports.getConfirmEmail = async (req, res, next) => {
         if(!gotConsentList) {
             console.log(`${new Date().toUTCString()} getConfirmEmail Error getting lists!`);
             return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
-        }
+        }*/
        
         //Search for token
         var contact = null;
         var gotContact = false;
         var contactAttempts = 0;
         while(!gotContact && contactAttempts < 4) {
-            contact = await searchToken(req.query.token, consentList.id);
+            contact = await searchToken(req.query.token);
             if(contact != null && contact.error != null) {
                 console.log(`${new Date().toUTCString()} getConfirmEmail Error search token ${contactAttempts}`);
                 contactAttempts++;
@@ -564,7 +672,7 @@ exports.getConfirmEmail = async (req, res, next) => {
         var activated = false;
         var activatedAttempts = 0;
         while(!activated && activatedAttempts < 4) {
-            activated = await activateContact(contact, consentList.id);
+            activated = await activateContact(contact);
             if(!activated) {
                 console.log(`${new Date().toUTCString()} getConfirmEmail Error activating contact ${activatedAttempts}`);
                 activatedAttempts++;

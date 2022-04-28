@@ -150,9 +150,7 @@ Parse.Cloud.define("generateToken", async (request) => {
   const numberOfDaysUntilExpire = 7
   const expireDate = new Date(); 
   expireDate.setDate(expireDate.getDate() + numberOfDaysUntilExpire);
-  console.log(expireDate);
   tokenObject.set("expireDate", expireDate);
-  console.log(tokenObject);
 
   let result = await tokenObject.save();
   console.log(result);
