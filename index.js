@@ -144,6 +144,9 @@ AppFeedbackSchema.CreateSchema();
 const FirmwareReleaseSchema = require('./schemas/FirmwareReleaseSchema');
 FirmwareReleaseSchema.CreateSchema();
 
+const StudyInterestSchema = require('./schemas/StudyInterestSchema');
+StudyInterestSchema.CreateSchema();
+
 module.exports = {
   app,
   config,

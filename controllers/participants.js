@@ -2,58 +2,121 @@ const sgClient = require('@sendgrid/client');
 const sgMail = require('@sendgrid/mail');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
+const { json } = require('express');
 
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 sgClient.setApiKey(process.env.SENDGRID_API_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-
 getSendgridContactList = async() => {
 
-    const requestList = {
-        method: 'GET',
-        url: '/v3/marketing/lists'
-    };
-    let [response, body] = await sgClient.request(requestList)
+    console.log(`${new Date().toUTCString()} getSendgridContactList`);
 
-    if(response.statusCode != 200) {
-        console.log('Error getting lists!');
-        return null;
+    try {
+        const requestList = {
+            method: 'GET',
+            url: '/v3/marketing/lists'
+        };
+        let [response, body] = await sgClient.request(requestList)
+    
+        if(response.statusCode != 200) {
+            console.log(`${new Date().toUTCString()} getSendgridContactList Error getting lists!`);
+            return {error: "Error getting lists!"};
+        }
+    
+        const consentList = body.result.find(element => element.name ===  process.env.CONTACT_LIST_NAME); 
+        if(consentList == undefined || consentList == null) {
+            console.log(`${new Date().toUTCString()} getSendgridContactList List not found!`);
+            return null;
+        }
+    
+        console.log(`${new Date().toUTCString()} getSendgridContactList finished`);
+        return consentList;
+    
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} getSendgridContactList exception ${error}`);
+        return {error};
     }
-
-    const consentList = body.result.find(element => element.name ===  process.env.CONTACT_LIST_NAME); 
-    if(consentList == undefined || consentList == null) {
-        console.log('List not found!');
-        return null;
-    }
-
-    return consentList;
 }
+
+/*
+checkIfContactExists = async(email, listId) => {
+
+    try {
+        console.log(`${new Date().toUTCString()} checkIfContactExists ${email} ${listId}`);
+
+        const searchData = {
+            query: `email LIKE '${email}' AND CONTAINS(list_ids, '${listId}')`
+        }
+    
+        const searchRequest = {
+            method: 'POST',
+            url: '/v3/marketing/contacts/search',
+            body: searchData,
+            timeout: 10
+        };
+        let [searchResponse, searchBody] = await sgClient.request(searchRequest)
+        if(searchResponse.statusCode != 200) {
+            console.log(`${new Date().toUTCString()} checkIfContactExists Error searching for token!`);
+            return {error: "Error searching for token!"};
+        }
+    
+        var result = searchBody.contact_count == 0 ? null : searchBody.result[0];
+        console.log(`${new Date().toUTCString()} checkIfContactExists finished ${result}`);
+        return result;
+
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} checkIfContactExists exception`);
+        console.log(error);
+        return {error};
+    }
+}*/
 
 checkIfContactExists = async(email, listId) => {
 
-    const searchData = {
-        query: `email LIKE '${email}' AND CONTAINS(list_ids, '${listId}')`
+    try {
+        console.log(`${new Date().toUTCString()} checkIfContactExists ${email} ${listId}`);
+
+        const options = {
+            method: 'GET',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+        }
+
+        const parameters = {
+            "email": email
+        }
+        const encodedParams = encodeURIComponent(`${JSON.stringify(parameters)}`);
+        const url = `${process.env.SERVER_URL}/classes/StudyInterest?where=${encodedParams}`;
+        console.log(url)
+
+        const response = await fetch(url, options);
+        if(!response.ok) {
+            console.log(`${new Date().toUTCString()} checkIfContactExist generateToken Error searching for email!`);
+            return {error: "Error searching for email!"};
+        }
+
+        const body = await response.json();     
+        var result = body.results.length == 0 ? null : body.results[0];
+        console.log(`${new Date().toUTCString()} checkIfContactExists finished`);
+        console.log(JSON.stringify(result));
+        return result;
+
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} checkIfContactExists exception`);
+        console.log(error);
+        return {error};
     }
-
-    const searchRequest = {
-        method: 'POST',
-        url: '/v3/marketing/contacts/search',
-        body: searchData
-    };
-    let [searchResponse, searchBody] = await sgClient.request(searchRequest)
-
-    if(searchResponse.statusCode != 200) {
-        console.log('Error searching for token!');
-        return null;
-    }
-
-    return searchBody.contact_count == 0 ? null : searchBody.result[0];
 }
 
 
 getCustomFieldsIds = async() => {
+
+    console.log(`${new Date().toUTCString()} getCustomFieldsIds`);
 
     const requestTemp = {
         method: 'GET',
@@ -70,19 +133,76 @@ getCustomFieldsIds = async() => {
         for(let customField of body.custom_fields) {
             customFieldMap[customField.name] = customField.id; 
         }
+
+        console.log(`${new Date().toUTCString()} getCustomFieldsIds finished ${customFieldMap}`);
+
         return customFieldMap;
     } catch (error) {
-        console.log(error);
+        console.log(`${new Date().toUTCString()} getCustomFieldsIds exception ${error}`);
         return null;
+    }
+}
+
+
+sendNewContactToServer = async(contact, activationToken, email, formalTrial, smartphoneType, study) => {
+
+    console.log(`${new Date().toUTCString()} sendNewContactToServer ${activationToken}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
+
+    try {
+
+        const options = {
+            method: contact != null ? 'PUT' : 'POST',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email,
+                activationToken,
+                formalTrial: formalTrial == "true",
+                smartphoneType,
+                study: study == "true",
+                activated: false
+            })
+        }
+    
+        const url = `${process.env.SERVER_URL}/classes/StudyInterest${contact == null ? '' : `/${contact.objectId}`}`;
+        console.log(url)
+    
+        const response = await fetch(url, options, {
+            email,
+            activationToken,
+            formalTrial,
+            smartphoneType,
+            study
+        });
+        if(!response.ok) {
+            console.log(`${new Date().toUTCString()} sendNewContactToServer Error on contact saving`);
+            console.log(JSON.stringify(response));
+            return false;
+        }
+    
+        console.log(`${new Date().toUTCString()} sendNewContactToServer Saved contact`);
+        return true;
+
+    } catch (error) {
+        console.log(`${new Date().toUTCString()} sendNewContactToServer Error on contact saving ${error}`);
+        console.log(error.response.body.errors);
+        return false;
     }
 }
 
 sendNewContactToSendgrid = async(contact, activationToken, listId, email, formalTrial, smartphoneType, study) => {
 
+    console.log(`${new Date().toUTCString()} sendNewContactToSendgrid ${contact}, ${activationToken}, ${listId}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
+
     let customFieldsIds = await getCustomFieldsIds();
 
-    if(customFieldsIds == null)
+    if(customFieldsIds == null) {
         return false;
+    }
+        
 
     const custom_fields = {}
     custom_fields[customFieldsIds['consent_get_involved_formal_trial']] = formalTrial;
@@ -90,7 +210,7 @@ sendNewContactToSendgrid = async(contact, activationToken, listId, email, formal
     custom_fields[customFieldsIds['consent_get_involved_study']] = study;
 
     if(contact == null || 
-        (contact != null && (contact.custom_fields.consent_get_involved_activated == 'false' || contact.custom_fields.consent_get_involved_activated == '' || contact.custom_fields.consent_get_involved_activated == null || contact.custom_fields.consent_get_involved_activated == undefined))) {
+        (contact != null && (contact.activated == 'false' || contact.activated == '' || contact.activated == null || contact.custom_fields.consent_get_involved_activated == undefined))) {
         custom_fields[customFieldsIds['consent_get_involved_activation_token']] = activationToken;
         custom_fields[customFieldsIds['consent_get_involved_activated']] = 'false';
     }
@@ -115,20 +235,23 @@ sendNewContactToSendgrid = async(contact, activationToken, listId, email, formal
     try {
         let [responseContact, bodyContact] = await sgClient.request(request)
         if(responseContact.statusCode == 202 || responseContact.statusCode == 200) {
-            console.log('Saved contact');
+            console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Saved contact`);
             return true;
         } else {
-            console.log('Error on contact saving');
+            console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Error on contact saving`);
             return false;
         }
     } catch (error) {
+        console.log(`${new Date().toUTCString()} sendNewContactToSendgrid Error on contact saving ${error}`);
         console.log(error.response.body.errors);
-        console.log('Error on contact saving');
         return false;
     }
 }
 
 sendConfirmationEmail = async(email, activationToken) => {
+
+    console.log(`${new Date().toUTCString()} sendConfirmationEmail ${email}, ${activationToken}`);
+
     const emailDelayMinutes = 3;
     const currentTime =  new Date();
     currentTime.setMinutes(currentTime.getMinutes() + emailDelayMinutes);
@@ -149,8 +272,10 @@ sendConfirmationEmail = async(email, activationToken) => {
 
     try {
         await sgMail.send(emailBody);
+        console.log(`${new Date().toUTCString()} sendConfirmationEmail finished`);
         return true;
     } catch (error) {
+        console.log(`${new Date().toUTCString()} sendConfirmationEmail exception ${error}`);
         console.error(error);
         if (error.response) {
             console.error(error.response.body)
@@ -159,7 +284,51 @@ sendConfirmationEmail = async(email, activationToken) => {
     }
 }
 
+
 searchToken = async(token, listId) => {
+
+    console.log(`${new Date().toUTCString()} searchToken ${token}, ${listId}`);
+    try {
+
+        const options = {
+            method: 'GET',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+        }
+
+        const parameters = {
+            "activationToken": token
+        }
+        const encodedParams = encodeURIComponent(`${JSON.stringify(parameters)}`);
+        const url = `${process.env.SERVER_URL}/classes/StudyInterest?where=${encodedParams}`;
+        console.log(url)
+
+        const response = await fetch(url, options);
+        if(!response.ok) {
+            console.log(`${new Date().toUTCString()} Error searching for token!`);
+            return {error: "Error searching for token!"};
+        }
+
+        const body = await response.json();     
+        var result = body.results.length == 0 ? null : body.results[0];
+        console.log(`${new Date().toUTCString()} searchToken finished`);
+        console.log(JSON.stringify(result));
+        return result;
+
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} searchToken exception ${error}`);
+        return {error};
+    }
+}
+
+/*
+searchToken = async(token, listId) => {
+
+    console.log(`${new Date().toUTCString()} searchToken ${token}, ${listId}`);
+
     const searchData = {
         query: `consent_get_involved_activation_token LIKE '${token}' AND CONTAINS(list_ids, '${listId}')`
     }
@@ -169,69 +338,86 @@ searchToken = async(token, listId) => {
         url: '/v3/marketing/contacts/search',
         body: searchData
     };
-    let [searchResponse, searchBody] = await sgClient.request(searchRequest)
 
-    if(searchResponse.statusCode != 200 || searchBody.contact_count == 0) {
-        console.log('Error searching for token!');
-        return null;
+    try {
+        let [searchResponse, searchBody] = await sgClient.request(searchRequest)
+        if(searchResponse.statusCode != 200 || searchBody.contact_count == 0) {
+            console.log(`${new Date().toUTCString()} Error searching for token!`);
+            return {error: "Error searching for token!"};
+        }
+        console.log(`${new Date().toUTCString()} searchToken`);
+        console.log(`${new Date().toUTCString()} searchToken ${searchBody.result[0]} finished`);
+        return searchBody.result[0];
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} searchToken exception ${error}`);
+        return {error};
     }
-
-    return searchBody.result[0];
-}
+}*/
 
 activateContact = async(contact, listId) => {
 
-    let customFieldsIds = await getCustomFieldsIds();
+    console.log(`${new Date().toUTCString()} activateContact ${contact}, ${listId}`);
 
-    //Get a token from the parse server
-    const options = {
-        method: 'POST',
-        headers: {
-            'X-Parse-Application-Id': `${process.env.APP_ID}`,
-            "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
-            "Content-Type": "application/json"
-        },            
-    }
-
-    const response = await fetch(`${process.env.SERVER_URL}/functions/generateToken`, options);
-    const body = await response.json();
+    try {
+       
+        let customFieldsIds = await getCustomFieldsIds();
     
-    const token = body.result;
-    console.log("New token", token);
-    console.log(response);
-    console.log(body);
-
-    const custom_fields = {}
-    custom_fields[customFieldsIds["consent_get_involved_activated"]] = "true";
-    custom_fields[customFieldsIds["consent_get_involved_study_token"]] = token;
-
-    const activateData = {
-        list_ids: [listId],
-        contacts: [
-            {
-                email: contact.email,
-                custom_fields
-            }
-        ],
-    }   
-    const request = {
-        method: 'PUT',
-        url: '/v3/marketing/contacts',
-        body: activateData,
-    };
-    let [activateResponse, activateBody] = await sgClient.request(request)
-
-    if(activateResponse.statusCode == 202 || activateResponse.statusCode == 200) {
-        console.log(`Contact activated (${contact.email}).`);
-        return true;
-    } else {
-        console.log('Error on contact updating');
+        //Get a token from the parse server
+        const options = {
+            method: 'POST',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },            
+        }
+    
+        const response = await fetch(`${process.env.SERVER_URL}/functions/generateToken`, options);
+        if(!response.ok) {
+            console.log(`${new Date().toUTCString()} activateContact generateToken error`);
+            console.log(`${response.body}`);
+            return false
+        }
+        const body = await response.json(); 
+        const token = body.result;
+       
+       
+        const custom_fields = {}
+        custom_fields[customFieldsIds["consent_get_involved_activated"]] = "true";
+        custom_fields[customFieldsIds["consent_get_involved_study_token"]] = token;
+    
+        const activateData = {
+            list_ids: [listId],
+            contacts: [
+                {
+                    email: contact.email,
+                    custom_fields
+                }
+            ],
+        }   
+        const request = {
+            method: 'PUT',
+            url: '/v3/marketing/contacts',
+            body: activateData,
+        };
+        let [activateResponse, activateBody] = await sgClient.request(request)
+    
+        if(activateResponse.statusCode == 202 || activateResponse.statusCode == 200) {
+            console.log(`${new Date().toUTCString()} activateContact Contact activated (${contact.email}).`);
+            return true;
+        } else {
+            console.log(`${new Date().toUTCString()} activateContact exception Error on contact updating`);
+            return false;
+        }
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} activateContact exception ${error}`);
         return false;
     }
-    
 }
 
 exports.postSignUp = async (req, res, next) => {
+
+    console.log(`${new Date().toUTCString()} postSignUp ${req.body["email"]}`);
 
     try {
 
@@ -241,38 +427,84 @@ exports.postSignUp = async (req, res, next) => {
         }
 
         //Get Sendgrid Contact Lists
-        const consentList = await getSendgridContactList();
-        if(consentList == null)
+        var consentList = null;
+        var gotConsentList = false; 
+        var consentListAttempts = 0;
+        while(!gotConsentList && consentListAttempts < 4) {
+            consentList = await getSendgridContactList();
+            if(consentList != null && consentList.error != null) {
+                console.log(`${new Date().toUTCString()} postSignUp Error getting contact list ${consentListAttempts}`);
+                consentListAttempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                gotConsentList = true;
+            }
+        }
+        if(!gotConsentList) {
             return res.status(500).send('Error Signing Up');
-
-
+        }
+       
         //Check if contact already exists and it's activated.
-        const contact = await checkIfContactExists(req.body["email"], consentList.id);
+        var contact = null;
+        var gotCheckIfContactExists = false;
+        var checkIfContactExistsAttempts = 0;
+        while(!gotCheckIfContactExists && checkIfContactExistsAttempts  < 4) {
+            contact = await checkIfContactExists(req.body["email"], consentList.id);
+            if(contact != null && contact.error != null) {
+                console.log(`${new Date().toUTCString()} postSignUp Check If Contact Exists failed ${req.body["email"]} ${checkIfContactExistsAttempts}`);
+                checkIfContactExistsAttempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                gotCheckIfContactExists = true;
+            }
+        }
+        if(!gotCheckIfContactExists) {
+            return res.status(500).send('Error Signing Up');
+        }
+
+        console.log(JSON.stringify(contact));
 
         //Generate activation token
-        const activationToken = crypto.randomBytes(128).toString('hex');
-
+        const activationToken = crypto.randomBytes(64).toString('hex');
 
         //Send new contact to Sendgrid
-        const sendSuccessful = await sendNewContactToSendgrid(contact, activationToken, consentList.id, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
-        if(!sendSuccessful)
+        var sendSuccessful = false;
+        var sendNewContactToSendgridAttemps = 0;
+        while(!sendSuccessful && sendNewContactToSendgridAttemps  < 4) {
+            sendSuccessful = await sendNewContactToSendgrid(contact, activationToken, consentList.id, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
+            if(!sendSuccessful) {
+                console.log(`${new Date().toUTCString()} postSignUp Save contact failed ${req.body["email"]}`);
+                sendNewContactToSendgridAttemps++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } 
+        }
+        if(!sendSuccessful) {
             return res.status(500).send('Error Signing Up');
+        }
 
+        //Send new contact to server
+        var sendServerSuccessful = await sendNewContactToServer(contact, activationToken, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
+        if(!sendServerSuccessful) {
+            console.log(`${new Date().toUTCString()} postSignUp Save contact to server failed ${req.body["email"]}`);
+            return res.status(500).send('Error Signing Up');
+        } 
     
         //if already activated, no need to send email
-        if(contact != null && contact.custom_fields.consent_get_involved_activated == 'true') {
-            console.log('Contact already exists, dont send email', req.body["email"], contact, contact.custom_fields.consent_get_involved_activated);
+        if(contact != null && contact.activated == 'true') {
+            console.log(`${new Date().toUTCString()} postSignUp Contact already exists, dont send email`, req.body["email"], contact, contact.custom_fields.consent_get_involved_activated);
             return res.status(200).send('Saved contact');
         }
 
         //Send Confirmation email
-        console.log("Sending email");
+        console.log(`${new Date().toUTCString()} postSignUp Sending email ${req.body["email"]}`);
         const sendEmailSuccessful = await sendConfirmationEmail(req.body["email"], activationToken);
-        if(sendEmailSuccessful)
+        if(sendEmailSuccessful) {
+            console.log(`${new Date().toUTCString()} postSignUp finished Saved contact ${req.body["email"]}`);
             return res.status(200).send('Saved contact');
-        else
+        } else {
+            console.log(`${new Date().toUTCString()} postSignUp finished Error Signing Up ${req.body["email"]}`);
             return res.status(500).send('Error Signing Up');
-
+        }
     } catch(e) {
         console.error(e);
         return res.status(500).send('Error Signing Up');
@@ -281,6 +513,8 @@ exports.postSignUp = async (req, res, next) => {
 
 exports.getConfirmEmail = async (req, res, next) => {
  
+    console.log(`${new Date().toUTCString()} getConfirmEmail`);
+
     try {
 
         const errors = validationResult(req);
@@ -289,24 +523,61 @@ exports.getConfirmEmail = async (req, res, next) => {
         }
 
         //Get Sendgrid Contact Lists
-        const consentList = await getSendgridContactList();
-        if(consentList == null) {
-            console.log('Error getting lists!');
+        var consentList = null;
+        var gotConsentList = false; 
+        var consentListAttempts = 0;
+        while(!gotConsentList && consentListAttempts < 4) {
+            consentList = await getSendgridContactList();
+            if(consentList != null && consentList.error != null) {
+                console.log(`${new Date().toUTCString()} getConfirmEmail Error getting contact list ${consentListAttempts}`);
+                consentListAttempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                gotConsentList = true;
+            }
+        }
+        if(!gotConsentList) {
+            console.log(`${new Date().toUTCString()} getConfirmEmail Error getting lists!`);
+            return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
+        }
+       
+        //Search for token
+        var contact = null;
+        var gotContact = false;
+        var contactAttempts = 0;
+        while(!gotContact && contactAttempts < 4) {
+            contact = await searchToken(req.query.token, consentList.id);
+            if(contact != null && contact.error != null) {
+                console.log(`${new Date().toUTCString()} getConfirmEmail Error search token ${contactAttempts}`);
+                contactAttempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } else {
+                gotContact = true;
+            }
+        }
+        if(!gotContact) {
+            console.log(`${new Date().toUTCString()} getConfirmEmail Error search token! finished`);
             return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
         }
 
-        //Search for token
-        const contact = await searchToken(req.query.token, consentList.id);
-        if(contact == null)
-            return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
-
         //Update contact to activated
-        const activated = activateContact(contact, consentList.id);
-        if(!activated)
+        var activated = false;
+        var activatedAttempts = 0;
+        while(!activated && activatedAttempts < 4) {
+            activated = await activateContact(contact, consentList.id);
+            if(!activated) {
+                console.log(`${new Date().toUTCString()} getConfirmEmail Error activating contact ${activatedAttempts}`);
+                activatedAttempts++;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } 
+        }
+        if(!activated) {
+            console.log(`${new Date().toUTCString()} getConfirmEmail Error getting lists! finished`);
             return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
-        
-        return res.redirect(process.env.TOKEN_ACTIVATED_REDIRECT_URL);
+        }
 
+        console.log(`${new Date().toUTCString()} getConfirmEmail finish`);
+        return res.redirect(process.env.TOKEN_ACTIVATED_REDIRECT_URL);
     } catch(e) {
         console.error(e);
         return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);

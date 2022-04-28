@@ -41,7 +41,7 @@ router.post('/signup', signupValidate, participantsController.postSignUp);
 const verifyEmailValidate = [
   // Check token
   query('token', 'Invalid token').isHexadecimal()
-  .isLength({ min: 256,max: 256 })
+  .isLength({ min: 64,max: 256 })
 ];
 
 // /confirm-email => GET
