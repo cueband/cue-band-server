@@ -9,6 +9,45 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 sgClient.setApiKey(process.env.SENDGRID_API_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+loginAdmin = async() => {
+
+    try {
+
+        console.log(`${new Date().toUTCString()} loginAdmin`);
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": process.env.ADMIN_USERNAME,
+                "password": process.env.ADMIN_PASSWORD
+            })
+        }
+
+        const url = `${process.env.SERVER_URL}/login`;
+        console.log(url)
+
+        const response = await fetch(url, options);
+        if(!response.ok) {
+            console.log(`${new Date().toUTCString()} loginAdmin error`);
+            return {error: "error"};
+        }
+
+        const body = await response.json(); 
+        return body.sessionToken;
+        
+    } catch(error) {
+        console.log(`${new Date().toUTCString()} loginAdmin exception`);
+        console.log(error);
+        return {error};
+    }
+
+}
+
 getSendgridContactList = async() => {
 
     console.log(`${new Date().toUTCString()} getSendgridContactList`);
@@ -73,7 +112,7 @@ checkIfContactExists = async(email, listId) => {
     }
 }*/
 
-checkIfContactExists = async(email) => {
+checkIfContactExists = async(email, sessionToken) => {
 
     try {
         console.log(`${new Date().toUTCString()} checkIfContactExists ${email}`);
@@ -81,8 +120,9 @@ checkIfContactExists = async(email) => {
         const options = {
             method: 'GET',
             headers: {
-                'X-Parse-Application-Id': `${process.env.APP_ID}`,
+                "X-Parse-Application-Id": `${process.env.APP_ID}`,
                 "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "X-Parse-Session-Token": sessionToken,
                 "Content-Type": "application/json"
             },
         }
@@ -201,7 +241,7 @@ sendNewContactToSendgrid = async(contact, activationToken, listId, email, formal
 
 */
 
-sendNewContactToServer = async(contact, activationToken, email, formalTrial, smartphoneType, study) => {
+sendNewContactToServer = async(contact, activationToken, email, formalTrial, smartphoneType, study, sessionToken) => {
 
     console.log(`${new Date().toUTCString()} sendNewContactToServer ${activationToken}, ${email}, ${formalTrial}, ${smartphoneType}, ${study}`);
 
@@ -212,6 +252,7 @@ sendNewContactToServer = async(contact, activationToken, email, formalTrial, sma
             headers: {
                 'X-Parse-Application-Id': `${process.env.APP_ID}`,
                 "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "X-Parse-Session-Token": sessionToken,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -323,7 +364,7 @@ sendConfirmationEmail = async(email, activationToken) => {
 }
 
 
-searchToken = async(token) => {
+searchToken = async(token, sessionToken) => {
 
     console.log(`${new Date().toUTCString()} searchToken ${token}`);
     try {
@@ -333,6 +374,7 @@ searchToken = async(token) => {
             headers: {
                 'X-Parse-Application-Id': `${process.env.APP_ID}`,
                 "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "X-Parse-Session-Token": sessionToken,
                 "Content-Type": "application/json"
             },
         }
@@ -456,7 +498,7 @@ activateContact = async(contact, listId) => {
 }
 */
 
-activateContact = async(contact) => {
+activateContact = async(contact, sessionToken) => {
 
     console.log(`${new Date().toUTCString()} activateContact ${JSON.stringify(contact)}`);
 
@@ -473,6 +515,7 @@ activateContact = async(contact) => {
             headers: {
                 'X-Parse-Application-Id': `${process.env.APP_ID}`,
                 "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "X-Parse-Session-Token": sessionToken,
                 "Content-Type": "application/json"
             },            
         }
@@ -492,6 +535,7 @@ activateContact = async(contact) => {
             headers: {
                 'X-Parse-Application-Id': `${process.env.APP_ID}`,
                 "X-Parse-REST-API-Key": `${process.env.REST_API_KEY}`,
+                "X-Parse-Session-Token": sessionToken,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -530,13 +574,17 @@ exports.postSignUp = async (req, res, next) => {
             return res.status(422).json({ errors: errors.array() });
         }
 
+        var sessionToken = await loginAdmin();
+        if(sessionToken == null || sessionToken == undefined) {
+            return res.status(500).send('Error Signing Up');
+        }
     
         //Check if contact already exists and it's activated.
         var contact = null;
         var gotCheckIfContactExists = false;
         var checkIfContactExistsAttempts = 0;
         while(!gotCheckIfContactExists && checkIfContactExistsAttempts  < 4) {
-            contact = await checkIfContactExists(req.body["email"]);
+            contact = await checkIfContactExists(req.body["email"], sessionToken);
             if(contact != null && contact.error != null) {
                 console.log(`${new Date().toUTCString()} postSignUp Check If Contact Exists failed ${req.body["email"]} ${checkIfContactExistsAttempts}`);
                 checkIfContactExistsAttempts++;
@@ -590,7 +638,7 @@ exports.postSignUp = async (req, res, next) => {
         const activationToken = crypto.randomBytes(64).toString('hex');
 
         //Send new contact to server
-        var sendServerSuccessful = await sendNewContactToServer(contact, activationToken, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString());
+        var sendServerSuccessful = await sendNewContactToServer(contact, activationToken, req.body["email"], req.body["formal_trial"].toString(), req.body["smartphone_type"].toString(), req.body["study"].toString(), sessionToken);
         if(!sendServerSuccessful) {
             console.log(`${new Date().toUTCString()} postSignUp Save contact to server failed ${req.body["email"]}`);
             return res.status(500).send('Error Signing Up');
@@ -648,13 +696,18 @@ exports.getConfirmEmail = async (req, res, next) => {
             console.log(`${new Date().toUTCString()} getConfirmEmail Error getting lists!`);
             return res.redirect(process.env.TOKEN_ERROR_REDIRECT_URL);
         }*/
-       
+
+        var sessionToken = await loginAdmin();
+        if(sessionToken == null || sessionToken == undefined) {
+            return res.status(500).send('Error Signing Up');
+        }
+
         //Search for token
         var contact = null;
         var gotContact = false;
         var contactAttempts = 0;
         while(!gotContact && contactAttempts < 4) {
-            contact = await searchToken(req.query.token);
+            contact = await searchToken(req.query.token, sessionToken);
             if(contact != null && contact.error != null) {
                 console.log(`${new Date().toUTCString()} getConfirmEmail Error search token ${contactAttempts}`);
                 contactAttempts++;
@@ -672,7 +725,7 @@ exports.getConfirmEmail = async (req, res, next) => {
         var activated = false;
         var activatedAttempts = 0;
         while(!activated && activatedAttempts < 4) {
-            activated = await activateContact(contact);
+            activated = await activateContact(contact, sessionToken);
             if(!activated) {
                 console.log(`${new Date().toUTCString()} getConfirmEmail Error activating contact ${activatedAttempts}`);
                 activatedAttempts++;

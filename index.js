@@ -102,6 +102,48 @@ if (!test) {
   ParseServer.createLiveQueryServer(httpServer);
 }
 
+
+setAdminUser= async() => {
+
+  const roleQuery = new Parse.Query(Parse.Role);
+  roleQuery.equalTo("name", "Admin");
+  const roleQueryResults = await roleQuery.find({ useMasterKey: true });
+  var adminRole = null;
+  if(roleQueryResults .length == 0) {
+    //Set role
+    const roleACL = new Parse.ACL();
+    roleACL.setPublicReadAccess(true);
+    roleACL.setPublicWriteAccess(true);
+    adminRole = new Parse.Role("Admin", roleACL);
+    adminRole.save({ useMasterKey: true });
+  } else {
+    adminRole = roleQueryResults[0];
+  }
+
+  //User exists
+  const userQuery = new Parse.Query(Parse.User);
+  userQuery.equalTo("username", process.env.ADMIN_USERNAME);
+  const userQueryResults = await userQuery.find({ useMasterKey: true });
+
+  if(userQueryResults.length == 0) {
+    //Create admin user
+    const adminUser = new Parse.User();
+    adminUser.set("username", process.env.ADMIN_USERNAME);
+    adminUser.set("password", process.env.ADMIN_PASSWORD);
+    adminUser.set("email", process.env.ADMIN_EMAIL);
+    try {
+      await adminUser.signUp({ useMasterKey: true });
+      adminRole.getUsers().add(adminUser);
+      adminRole.save({ useMasterKey: true });
+    } catch (error) {
+      // Show the error message somewhere and let the user try again.
+      console.log("Error: " + error.code + " " + error.message);
+    }
+  }
+}
+
+setAdminUser();
+
 const cueingIntervalSchema = require('./schemas/CueingIntervalSchema');
 cueingIntervalSchema.CreateSchema();
 

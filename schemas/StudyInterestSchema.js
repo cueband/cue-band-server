@@ -6,7 +6,26 @@ exports.CreateSchema = async() => {
         console.log("StudyInterest schema loaded previously.");
     } catch {
         console.log("StudyInterest schema not found. Creating it now.");
+    
+        const clp = {
+            "find": {
+              "role:Admin": true
+            },
+            "get": {
+              "role:Admin": true
+            },
+            "create": { 
+                "role:Admin": true 
+            },
+            "update": { 
+                "role:Admin": true 
+            },
+            "delete": { 
+                "role:Admin": true 
+            }
+          };
         schema
+        .setCLP(clp)
         .addString("email")
         .addBoolean("activated")
         .addString("activationToken")
