@@ -346,7 +346,7 @@ sendConfirmationEmail = async(email, activationToken) => {
             tokenLink: `${process.env.DOMAIN_URL}${confirmEmailEndpoint}?token=${activationToken}`,
             email,
         },
-        sendAt: unixTimeInSeconds
+        //sendAt: unixTimeInSeconds
     }
 
     try {
