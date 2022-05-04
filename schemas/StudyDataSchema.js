@@ -129,6 +129,13 @@ exports.CreateSchema = async() => {
         .addString("createScheduleProgressCondition")
         .addBoolean("createScheduleDone")
 
+        //SetCueingSettings
+        .addDate("setCueingSettingsDateStarted")
+        .addDate("setCueingSettingsDateFinished")
+        .addBoolean("setCueingSettingsReached")
+        .addString("setCueingSettingsProgressCondition")
+        .addBoolean("setCueingSettingsDone")
+
         //CueingMethod1
         .addDate("cueingMethod1DateStarted")
         .addDate("cueingMethod1DateFinished")
