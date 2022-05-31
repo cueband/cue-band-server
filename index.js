@@ -183,11 +183,26 @@ PostSchema.CreateSchema();
 const AppFeedbackSchema = require('./schemas/AppFeedbackSchema');
 AppFeedbackSchema.CreateSchema();
 
+const StudyInterestSchema = require('./schemas/StudyInterestSchema');
+StudyInterestSchema.CreateSchema();
+
 const FirmwareReleaseSchema = require('./schemas/FirmwareReleaseSchema');
 FirmwareReleaseSchema.CreateSchema();
 
-const StudyInterestSchema = require('./schemas/StudyInterestSchema');
-StudyInterestSchema.CreateSchema();
+const AppReleaseSchema = require('./schemas/AppReleaseSchema');
+AppReleaseSchema.CreateSchema();
+
+const TestGroupAppRelease = require('./schemas/TestGroupAppRelease');
+TestGroupAppRelease.CreateSchema();
+
+const TestGroupFirmwareRelease = require('./schemas/TestGroupFirmwareRelease');
+TestGroupFirmwareRelease.CreateSchema();
+
+const TestGroupSchema = require('./schemas/TestGroupSchema');
+TestGroupSchema.CreateSchema();
+
+const UserTestGroup = require('./schemas/UserTestGroup');
+UserTestGroup.CreateSchema();
 
 module.exports = {
   app,
