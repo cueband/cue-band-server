@@ -192,16 +192,16 @@ FirmwareReleaseSchema.CreateSchema();
 const AppReleaseSchema = require('./schemas/AppReleaseSchema');
 AppReleaseSchema.CreateSchema();
 
-const TestGroupAppRelease = require('./schemas/TestGroupAppRelease');
+const TestGroupAppRelease = require('./schemas/TestGroupAppReleaseSchema');
 TestGroupAppRelease.CreateSchema();
 
-const TestGroupFirmwareRelease = require('./schemas/TestGroupFirmwareRelease');
+const TestGroupFirmwareRelease = require('./schemas/TestGroupFirmwareReleaseSchema');
 TestGroupFirmwareRelease.CreateSchema();
 
 const TestGroupSchema = require('./schemas/TestGroupSchema');
 TestGroupSchema.CreateSchema();
 
-const UserTestGroup = require('./schemas/UserTestGroup');
+const UserTestGroup = require('./schemas/UserTestGroupSchema');
 UserTestGroup.CreateSchema();
 
 module.exports = {
