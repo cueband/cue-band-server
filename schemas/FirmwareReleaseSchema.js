@@ -8,8 +8,10 @@ exports.CreateSchema = async () => {
         schema
         .addString("downloadLink")
         .addString("version")
-        .addBoolean("active")
-        .addString("text")
+        .addString("minAndroidAppVersion")
+        .addString("maxAndroidAppVersion")
+        .addString("maxIosAppVersion")
+        .addString("minIosAppVersion")
         await schema.save({ useMasterKey: true });
     }
 }
