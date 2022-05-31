@@ -7,7 +7,7 @@ exports.CreateSchema = async () => {
         console.log("UserTestGroupSchema schema not found. Creating it now.");
         schema
         .addPointer('user', '_User')
-        .addPointer("testGroup", "TestGroup");
+        .addString("testGroupId");
         await schema.save({ useMasterKey: true });
     }
 }

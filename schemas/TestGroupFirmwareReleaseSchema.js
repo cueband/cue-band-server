@@ -7,8 +7,8 @@ exports.CreateSchema = async () => {
         console.log("TestGroupFirmwareReleaseSchema schema not found. Creating it now.");
         schema
         .addNumber("order")
-        .addPointer("firmwareRelease", "FirmwareRelease")
-        .addPointer("testGroup", "TestGroup")
+        .addString("firmwareReleaseId")
+        .addString("testGroupId")
         .addString("text");
         await schema.save({ useMasterKey: true });
     }

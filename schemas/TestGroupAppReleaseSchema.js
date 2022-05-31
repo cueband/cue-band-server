@@ -7,8 +7,8 @@ exports.CreateSchema = async () => {
         console.log("TestGroupAppReleaseSchema schema not found. Creating it now.");
         schema
         .addNumber("order")
-        .addPointer("appRelease", "AppRelease")
-        .addPointer("testGroup", "TestGroup");
+        .addString("appReleaseId")
+        .addString("testGroupId");
         await schema.save({ useMasterKey: true });
     }
 }
