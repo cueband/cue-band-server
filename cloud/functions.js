@@ -555,8 +555,8 @@ Parse.Cloud.define("getLatestAppRelease", async (request) => {
       id: appReleaseAndroidResult.id,
       downloadLink: appReleaseAndroidResult.get("downloadLink"),
       version: appReleaseAndroidResult.get("version"),
-      minAndroidAppVersion: appReleaseAndroidResult.get("minFirmwareVersion"),
-      maxAndroidAppVersion: appReleaseAndroidResult.get("maxFirmwareVersion"),
+      minFirmwareVersion: appReleaseAndroidResult.get("minFirmwareVersion"),
+      maxFirmwareVersion: appReleaseAndroidResult.get("maxFirmwareVersion"),
       platform: appReleaseAndroidResult.get("platform"),
     } : {};
   
@@ -573,8 +573,8 @@ Parse.Cloud.define("getLatestAppRelease", async (request) => {
       id: appReleaseIosResult.id,
       downloadLink: appReleaseIosResult.get("downloadLink"),
       version: appReleaseIosResult.get("version"),
-      minAndroidAppVersion: appReleaseIosResult.get("minFirmwareVersion"),
-      maxAndroidAppVersion: appReleaseIosResult.get("maxFirmwareVersion"),
+      minFirmwareVersion: appReleaseIosResult.get("minFirmwareVersion"),
+      maxFirmwareVersion: appReleaseIosResult.get("maxFirmwareVersion"),
       platform: appReleaseIosResult.get("platform"),
     } : {};
   }
