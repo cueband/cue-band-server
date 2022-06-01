@@ -461,10 +461,12 @@ Parse.Cloud.define("getLatestFirmwareRelease", async (request) => {
   });
 
   console.log("latestTestGroupFirmwareRelease:", latestTestGroupFirmwareRelease);
-  console.log("latestTestGroupFirmwareReleaseId:", latestTestGroupFirmwareRelease.id);
+  console.log("latestTestGroupFirmwareReleaseId:", latestTestGroupFirmwareRelease.firmwareReleaseId);
 
   const firmwareReleaseQuery = new Parse.Query("FirmwareRelease");
-  const firmwareReleaseResult = await firmwareReleaseQuery.first({useMasterKey:true});
+  const firmwareReleaseResult = await firmwareReleaseQuery.get(latestTestGroupFirmwareRelease.firmwareReleaseId, {useMasterKey:true});
+
+  //const firmwareReleaseResult = await firmwareReleaseQuery.find({useMasterKey:true});
   console.log("firmwareReleaseResult:", firmwareReleaseResult);
   if(firmwareReleaseResult == undefined) {
     return {};
@@ -481,29 +483,102 @@ Parse.Cloud.define("getLatestFirmwareRelease", async (request) => {
     text: latestTestGroupFirmwareRelease["text"],
   }
 
-
-
-/*
-  const query = new Parse.Query("FirmwareRelease");
-  query.equalTo("active", true);
-  const results = await query.find({useMasterKey:true});
-
-  console.log(results);
-
-  if(results.length == 0) {
-    return {};
-  }
-
-  const firmwareRelease = {
-    id: results[0].get("id"),
-    createdAt: results[0].get("createdAt"),
-    downloadLink: results[0].get("downloadLink"),
-    version: results[0].get("version"),
-    active: results[0].get("active"),
-    text: results[0].get("text")
-  };*/
-
   console.log(firmwareRelease);
 
   return firmwareRelease ;
 });
+
+
+Parse.Cloud.define("getLatestAppRelease", async (request) => {
+
+  const testGroupQuery = new Parse.Query("TestGroup")
+  testGroupQuery.equalTo("name", "main");
+  const testGroupResult = await testGroupQuery.find({useMasterKey:true});
+  console.log("testGroupResult:", testGroupResult);
+  if(testGroupResult.length == 0) {
+    console.log("testGroupResult: Empty");
+    return {};
+  }
+
+  var testgroupId = testGroupResult[0].id;
+  const testGroupAppReleaseQuery = new Parse.Query("TestGroupAppRelease")
+  testGroupAppReleaseQuery.equalTo("testGroupId", testgroupId);
+  const testGroupAppReleaseResult = await testGroupAppReleaseQuery.find({useMasterKey:true});
+  console.log("testGroupAppReleaseResult:", testGroupAppReleaseResult);
+  if(testGroupAppReleaseResult.length == 0) {
+    console.log("testGroupAppReleaseResult: Empty");
+    return {};
+  }
+
+  var latestTestGroupAppReleaseAndroid = null
+  var latestTestGroupAppReleaseAndroidOrder = -1; 
+  
+  var latestTestGroupAppReleaseIos = null
+  var latestTestGroupAppReleaseIosOrder = -1; 
+  
+  testGroupAppReleaseResult.forEach(element => {
+
+    var platform = element.get("platform");
+    if(platform == "android" && element.get("order") > latestTestGroupAppReleaseAndroidOrder) {
+      latestTestGroupAppReleaseAndroid = {
+        id: element.id,
+        appReleaseId: element.get("appReleaseId"),
+        testGroupId: element.get("testGroupId"),
+        text: element.get("text"),
+        order: element.get("order"),
+        platform: element.get("platform"),
+      }
+      latestTestGroupAppReleaseAndroidOrder = element.get("order");
+    } else if (platform == "ios" && element.get("order") > latestTestGroupAppReleaseIosOrder) {
+      latestTestGroupAppReleaseIos = {
+        id: element.id,
+        appReleaseId: element.get("appReleaseId"),
+        testGroupId: element.get("testGroupId"),
+        text: element.get("text"),
+        order: element.get("order"),
+        platform: element.get("platform"),
+      }
+      latestTestGroupAppReleaseIosOrder = element.get("order");
+    }
+  });
+
+  console.log("latestTestGroupAppReleaseAndroid:", latestTestGroupAppReleaseAndroid);
+  console.log("latestTestGroupAppReleaseIos:", latestTestGroupAppReleaseIos);
+
+  var appReleaseAndroid = {};
+  if(latestTestGroupAppReleaseAndroid != null) {
+    const appReleaseAndroidQuery = new Parse.Query("AppRelease");
+    const appReleaseAndroidResult = await appReleaseAndroidQuery.get(latestTestGroupAppReleaseAndroid.appReleaseId, {useMasterKey:true});
+    console.log("appReleaseAndroidResult:", appReleaseAndroidResult);
+  
+    appReleaseAndroid = appReleaseAndroidResult != undefined ? {
+      id: appReleaseAndroidResult.id,
+      downloadLink: appReleaseAndroidResult.get("downloadLink"),
+      version: appReleaseAndroidResult.get("version"),
+      minAndroidAppVersion: appReleaseAndroidResult.get("minFirmwareVersion"),
+      maxAndroidAppVersion: appReleaseAndroidResult.get("maxFirmwareVersion"),
+      platform: appReleaseAndroidResult.get("platform"),
+    } : {};
+  
+  }
+
+  var appReleaseIos = {};
+  if(latestTestGroupAppReleaseIos != null) {
+
+    const appReleaseIosQuery = new Parse.Query("AppRelease");
+    const appReleaseIosResult = await appReleaseIosQuery.get(latestTestGroupAppReleaseIos.appReleaseId, {useMasterKey:true});
+    console.log("appReleaseIosResult:", appReleaseIosResult);
+  
+    appReleaseIos = appReleaseIosResult != undefined ? {
+      id: appReleaseIosResult.id,
+      downloadLink: appReleaseIosResult.get("downloadLink"),
+      version: appReleaseIosResult.get("version"),
+      minAndroidAppVersion: appReleaseIosResult.get("minFirmwareVersion"),
+      maxAndroidAppVersion: appReleaseIosResult.get("maxFirmwareVersion"),
+      platform: appReleaseIosResult.get("platform"),
+    } : {};
+  }
+
+  return [appReleaseAndroid, appReleaseIos];
+});
+

@@ -8,7 +8,9 @@ exports.CreateSchema = async () => {
         schema
         .addNumber("order")
         .addString("appReleaseId")
-        .addString("testGroupId");
+        .addString("testGroupId")
+        .addString("text")
+        .addString("platform");
         await schema.save({ useMasterKey: true });
     }
 }

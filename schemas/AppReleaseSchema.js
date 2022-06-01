@@ -10,6 +10,7 @@ exports.CreateSchema = async () => {
         .addString("minFirmwareVersion")
         .addString("maxFirmwareVersion")
         .addString("platform")
+        .addString("downloadLink")
         await schema.save({ useMasterKey: true });
     }
 }
