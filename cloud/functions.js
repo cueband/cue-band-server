@@ -426,6 +426,64 @@ Parse.Cloud.define("sendAppFeedback", async (request) => {
 
 Parse.Cloud.define("getLatestFirmwareRelease", async (request) => {
 
+  const testGroupQuery = new Parse.Query("TestGroup")
+  testGroupQuery.equalTo("name", "main");
+  const testGroupResult = await testGroupQuery.find({useMasterKey:true});
+  console.log("testGroupResult:", testGroupResult);
+  if(testGroupResult.length == 0) {
+    console.log("testGroupResult: Empty");
+    return {};
+  }
+
+  var testgroupId = testGroupResult[0].id;
+  const testGroupFirmwareReleaseQuery = new Parse.Query("TestGroupFirmwareRelease")
+  testGroupFirmwareReleaseQuery.equalTo("testGroupId", testgroupId);
+  const testGroupFirmwareReleaseResult = await testGroupFirmwareReleaseQuery.find({useMasterKey:true});
+  console.log("testGroupFirmwareReleaseResult:", testGroupFirmwareReleaseResult);
+  if(testGroupFirmwareReleaseResult.length == 0) {
+    console.log("testGroupFirmwareReleaseResult: Empty");
+    return {};
+  }
+
+  var latestTestGroupFirmwareRelease = null
+  var latestTestGroupFirmwareReleaseOrder = -1; 
+  testGroupFirmwareReleaseResult.forEach(element => {
+    if(element.get("order") > latestTestGroupFirmwareReleaseOrder) {
+      latestTestGroupFirmwareRelease = {
+        id: element.id,
+        firmwareReleaseId: element.get("firmwareReleaseId"),
+        testGroupId: element.get("testGroupId"),
+        text: element.get("text"),
+        order: element.get("order"),
+      }
+      latestTestGroupFirmwareReleaseOrder = element.get("order");
+    }
+  });
+
+  console.log("latestTestGroupFirmwareRelease:", latestTestGroupFirmwareRelease);
+  console.log("latestTestGroupFirmwareReleaseId:", latestTestGroupFirmwareRelease.id);
+
+  const firmwareReleaseQuery = new Parse.Query("FirmwareRelease");
+  const firmwareReleaseResult = await firmwareReleaseQuery.first({useMasterKey:true});
+  console.log("firmwareReleaseResult:", firmwareReleaseResult);
+  if(firmwareReleaseResult == undefined) {
+    return {};
+  }  
+
+  const firmwareRelease = {
+    id: firmwareReleaseResult.id,
+    downloadLink: firmwareReleaseResult.get("downloadLink"),
+    version: firmwareReleaseResult.get("version"),
+    minAndroidAppVersion: firmwareReleaseResult.get("minAndroidAppVersion"),
+    maxAndroidAppVersion: firmwareReleaseResult.get("maxAndroidAppVersion"),
+    minIosAppVersion: firmwareReleaseResult.get("minIosAppVersion"),
+    maxIosAppVersion: firmwareReleaseResult.get("maxIosAppVersion"),
+    text: latestTestGroupFirmwareRelease["text"],
+  }
+
+
+
+/*
   const query = new Parse.Query("FirmwareRelease");
   query.equalTo("active", true);
   const results = await query.find({useMasterKey:true});
@@ -443,7 +501,7 @@ Parse.Cloud.define("getLatestFirmwareRelease", async (request) => {
     version: results[0].get("version"),
     active: results[0].get("active"),
     text: results[0].get("text")
-  };
+  };*/
 
   console.log(firmwareRelease);
 
