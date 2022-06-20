@@ -45,6 +45,6 @@ const verifyEmailValidate = [
 ];
 
 // /confirm-email => GET
-router.get('/confirm-email', verifyEmailValidate, participantsController.getConfirmEmail)
+router.get('/confirm-email', /*verifyEmailValidate,*/ participantsController.getConfirmEmail)
 
 module.exports = router;

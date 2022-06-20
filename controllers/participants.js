@@ -350,7 +350,9 @@ sendConfirmationEmail = async(email, activationToken) => {
     }
 
     try {
-        await sgMail.send(emailBody);
+        console.log(emailBody);
+        const result = await sgMail.send(emailBody);
+        console.log(result);
         console.log(`${new Date().toUTCString()} sendConfirmationEmail finished`);
         return true;
     } catch (error) {
