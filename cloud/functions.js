@@ -321,11 +321,32 @@ Parse.Cloud.define("checkAssessmentToken", async (request) => {
   return "found";
 });
 
+function generateParticipantReference(name, ageRange) {
+  //generate participant reference
+  let splitName = name.split(" ");
+  let initials = "";
+  for(let i = 0; i < splitName.length; i++) {
+    if(splitName[0].length > 0) {
+      initials += splitName[i][0];
+    }
+  }
+
+  let age = `${ageRange[0]}${ageRange[1]}`
+  let yearOfBirth = new Date().getFullYear() - age;
+
+  const hashCurrentDate = ((+new Date) + Math.random()* 1000).toString(36);
+
+  return `${initials}${yearOfBirth}${hashCurrentDate}`;
+}
+
 Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
   console.log("submitConsentAndDemographics");
 
   console.log("token", request.params.token);
   console.log("data", request.params.data);
+
+  
+  let participantReference = generateParticipantReference(request.params.data.c10, request.params.data.f1);
 
   const Consent = Parse.Object.extend("Consent");
   const consentObject = new Consent();
@@ -340,6 +361,7 @@ Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
   consentObject.set("question8Answer", request.params.data.c8);
   consentObject.set("question9Answer", request.params.data.c9);
   consentObject.set("name", request.params.data.c10);
+  consentObject.set("participantReference", participantReference);
 
   const consentObjectACL = new Parse.ACL();
   consentObjectACL .setPublicReadAccess(false);

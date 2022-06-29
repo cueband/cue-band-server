@@ -6,7 +6,7 @@ exports.CreateSchema = async () => {
     } catch {
         console.log("CueingInterval schema not found. Creating it now.");
         schema
-        .addNumber("id")
+        .addNumber("localId")
         .addNumber("startTimeHours")
         .addNumber("startTimeMinutes")
         .addNumber("endTimeHours")

@@ -12,7 +12,10 @@ exports.CreateSchema = async() => {
         .addDate("dayDate")
         .addNumber("month")
         .addNumber("year")
-        .addString("text")
+        .addNumber("frequency")
+        .addNumber("duration")
+        .addNumber("severity")
+        .addBoolean("partialAssessment")
         .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }

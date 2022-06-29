@@ -20,6 +20,7 @@ exports.CreateSchema = async () => {
         .addNumber("accelerometer")
         .addNumber("firmware")
         .addNumber("checksum")
+        .addArray("raw")
         .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }

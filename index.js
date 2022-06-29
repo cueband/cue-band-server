@@ -201,8 +201,14 @@ TestGroupFirmwareRelease.CreateSchema();
 const TestGroupSchema = require('./schemas/TestGroupSchema');
 TestGroupSchema.CreateSchema();
 
-const UserTestGroup = require('./schemas/UserTestGroupSchema');
-UserTestGroup.CreateSchema();
+const UserTestGroupSchema = require('./schemas/UserTestGroupSchema');
+UserTestGroupSchema.CreateSchema();
+
+const AppLogSchema = require('./schemas/AppLogSchema');
+AppLogSchema.CreateSchema();
+
+const WearableDeviceSchema = require('./schemas/WearableDeviceSchema');
+WearableDeviceSchema.CreateSchema();
 
 module.exports = {
   app,

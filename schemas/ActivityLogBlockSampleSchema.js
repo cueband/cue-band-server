@@ -12,6 +12,7 @@ exports.CreateSchema = async () => {
         .addNumber("meanFilteredSvmmo")
         .addNumber("meanSvmmo")
         .addNumber("blockId")
+        .addNumber("order")
         .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }

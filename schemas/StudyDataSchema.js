@@ -39,6 +39,7 @@ exports.CreateSchema = async() => {
         .addBoolean("giveConsentReached")
         .addString("giveConsentProgressCondition")
         .addBoolean("giveConsentDone")
+        .addString("giveConsentKey")
 
         //InsertToken
         .addDate("insertTokenDateStarted")
@@ -185,6 +186,7 @@ exports.CreateSchema = async() => {
         .addString("assessment4Key")
 
         //PostStudy
+        .addDate("postStudyDateStarted")
         .addDate("postStudyDateFinished")
         .addBoolean("postStudyReached")
         .addString("postStudyProgressCondition")

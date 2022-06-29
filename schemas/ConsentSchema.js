@@ -18,6 +18,7 @@ exports.CreateSchema = async() => {
         .addString("question8Answer")
         .addString("question9Answer")
         .addString("name")
+        .addString("participantReference")
         await schema.save({ useMasterKey: true });
     }
 }
