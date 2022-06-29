@@ -332,6 +332,11 @@ function generateParticipantReference(name, ageRange) {
   }
 
   let age = `${ageRange[0]}${ageRange[1]}`
+
+  if(isNaN(age)) {
+    age =  Math.floor(Math.random() * 100);
+  }
+
   let yearOfBirth = new Date().getFullYear() - age;
 
   const hashCurrentDate = ((+new Date) + Math.random()* 1000).toString(36);
