@@ -210,6 +210,12 @@ AppLogSchema.CreateSchema();
 const WearableDeviceSchema = require('./schemas/WearableDeviceSchema');
 WearableDeviceSchema.CreateSchema();
 
+const DeviceBoxSchema = require('./schemas/DeviceBoxSchema');
+DeviceBoxSchema.CreateSchema();
+
+const DeviceOrderSchema = require('./schemas/DeliveryAddressSchema');
+DeviceOrderSchema.CreateSchema();
+
 module.exports = {
   app,
   config,
