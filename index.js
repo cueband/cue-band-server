@@ -213,7 +213,7 @@ WearableDeviceSchema.CreateSchema();
 const DeviceBoxSchema = require('./schemas/DeviceBoxSchema');
 DeviceBoxSchema.CreateSchema();
 
-const DeviceOrderSchema = require('./schemas/DeliveryAddressSchema');
+const DeviceOrderSchema = require('./schemas/DeviceOrderSchema');
 DeviceOrderSchema.CreateSchema();
 
 module.exports = {
