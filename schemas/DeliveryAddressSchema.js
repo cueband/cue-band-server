@@ -13,6 +13,7 @@ exports.CreateSchema = async() => {
         .addString("addressLine2")
         .addString("postcode")
         .addString("city")
+        .addBoolean("needsReviewing")
         .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }
