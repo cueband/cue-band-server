@@ -216,6 +216,9 @@ DeviceBoxSchema.CreateSchema();
 const DeviceOrderSchema = require('./schemas/DeviceOrderSchema');
 DeviceOrderSchema.CreateSchema();
 
+const PostStudyQuestionnaireSchema = require('./schemas/PostStudyQuestionnaireSchema')
+PostStudyQuestionnaireSchema.CreateSchema();
+
 module.exports = {
   app,
   config,

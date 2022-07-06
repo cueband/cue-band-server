@@ -1,5 +1,4 @@
 exports.CreateSchema = async() => {
-
     const schema = new Parse.Schema('DeliveryAddress');
     try {
         await schema.get({ useMasterKey: true });
