@@ -6,7 +6,7 @@ exports.CreateSchema = async() => {
     } catch {
         console.log("PostStudyQuestionnaire schema not found. Creating it now.");
         schema
-        .addString("Question1Answer")
+        .addString("question1Answer")
         .addPointer('user', '_User');
         await schema.save({ useMasterKey: true });
     }
