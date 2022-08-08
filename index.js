@@ -88,6 +88,10 @@ app.get('/consent', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/consent.html'));
 });
 
+app.get('/informationsheet', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/informationsheet.html'));
+});
+
 app.get('/firmware', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/firmware'));
 });
@@ -216,8 +220,11 @@ DeviceBoxSchema.CreateSchema();
 const DeviceOrderSchema = require('./schemas/DeviceOrderSchema');
 DeviceOrderSchema.CreateSchema();
 
-const PostStudyQuestionnaireSchema = require('./schemas/PostStudyQuestionnaireSchema')
+const PostStudyQuestionnaireSchema = require('./schemas/PostStudyQuestionnaireSchema');
 PostStudyQuestionnaireSchema.CreateSchema();
+
+const LeftStudySchema = require('./schemas/LeftStudySchema');
+LeftStudySchema.CreateSchema();
 
 module.exports = {
   app,
