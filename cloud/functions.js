@@ -174,56 +174,81 @@ Parse.Cloud.define("tokenInfo", async (request) => {
     };
   }
 
+
   var expireDate = results[0].get("expireDate");
 
-  //Get Sendgrid Contact Lists
-  const requestList = {
-    method: 'GET',
-    url: '/v3/marketing/lists'
-  };
-  let [response, body] = await sgClient.request(requestList)
+  const queryStudyInterest = new Parse.Query("StudyInterest");
+  queryStudyInterest.equalTo("studyToken", tokenString);
+  const resultsStudyInterest = await query.find();
+  if(resultsStudyInterest.length == 0)
+  {
+    console.log("Error - StudyInterest not in database!");
 
-  if(response.statusCode != 200) {
-    console.log('Error getting lists!');
-    return {
-      "code": 141,
-      "error": "Invalid Token"
+    //Search on sendgrid
+    //Get Sendgrid Contact Lists
+    const requestList = {
+      method: 'GET',
+      url: '/v3/marketing/lists'
     };
-  }
+    let [response, body] = await sgClient.request(requestList)
 
-  const consentList = body.result.find(element => element.name ===  process.env.CONTACT_LIST_NAME); 
-  if(consentList == undefined || consentList == null) {
-    console.log('List not found!');
-    return {
-      "code": 141,
-      "error": "Invalid Token"
+    if(response.statusCode != 200) {
+      console.log('Error getting lists!');
+      return {
+        "code": 141,
+        "error": "Invalid Token"
+      };
+    }
+
+    const consentList = body.result.find(element => element.name ===  process.env.CONTACT_LIST_NAME); 
+    if(consentList == undefined || consentList == null) {
+      console.log('List not found!');
+      return {
+        "code": 141,
+        "error": "Invalid Token"
+      };
+    }
+
+    //Search for token
+    const tokenQuery = {
+      query: `consent_get_involved_study_token LIKE '${tokenString}' AND CONTAINS(list_ids, '${consentList.id}')`
+    }
+
+    const tokenQueryRequest = {
+      method: 'POST',
+      url: '/v3/marketing/contacts/search',
+      body: tokenQuery
     };
+    let [queryResponse, queryBody] = await sgClient.request(tokenQueryRequest);
+
+    if(queryResponse.statusCode != 200 || queryBody.contact_count == 0) {
+      console.log("Error - Token not found in Sendgrid");
+      return {
+        "code": 141,
+        "error": "Invalid Token"
+      };
+    }
+
+    queryBody.result[0]['expireDate'] = expireDate
+
+    console.log(queryBody.result[0]);
+    return queryBody.result[0];
   }
 
-  //Search for token
-  const tokenQuery = {
-    query: `consent_get_involved_study_token LIKE '${tokenString}' AND CONTAINS(list_ids, '${consentList.id}')`
-  }
+  let toBeSent = {};
+  toBeSent['email'] = resultsStudyInterest[0].get("email");
+  toBeSent['expireDate'] = expireDate;
 
-  const tokenQueryRequest = {
-    method: 'POST',
-    url: '/v3/marketing/contacts/search',
-    body: tokenQuery
-  };
-  let [queryResponse, queryBody] = await sgClient.request(tokenQueryRequest);
+  let customFields = {};
 
-  if(queryResponse.statusCode != 200 || queryBody.contact_count == 0) {
-    console.log("Error - Token not found in Sendgrid");
-    return {
-      "code": 141,
-      "error": "Invalid Token"
-    };
-  }
+  customFields['consent_get_involved_formal_trial'] = resultsStudyInterest[0].get("formalTrial");
+  customFields['consent_get_involved_study'] = resultsStudyInterest[0].get("study");
+  customFields['consent_get_involved_smartphone_type'] = resultsStudyInterest[0].get("smartphoneType");
 
-  queryBody.result[0]['expireDate'] = expireDate
+  toBeSent['custom_fields'] = customFields;
 
-  console.log(queryBody.result[0]);
-  return queryBody.result[0];
+  return toBeSent;
+
 },{
   fields : ['token'],
   requireUser: false
