@@ -179,7 +179,7 @@ Parse.Cloud.define("tokenInfo", async (request) => {
 
   const queryStudyInterest = new Parse.Query("StudyInterest");
   queryStudyInterest.equalTo("studyToken", tokenString);
-  const resultsStudyInterest = await query.find();
+  const resultsStudyInterest = await queryStudyInterest.find({useMasterKey:true});
   if(resultsStudyInterest.length == 0)
   {
     console.log("Error - StudyInterest not in database!");
