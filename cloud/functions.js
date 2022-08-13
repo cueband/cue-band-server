@@ -43,6 +43,18 @@ Parse.Cloud.define("googleSignIn", async (request) => {
   return loginLink;
 });
 
+
+Parse.Cloud.define("appleSignIn", async (request) => {
+  const url = new URL("https://appleid.apple.com/auth/authorize");
+  url.searchParams.append("client_id", process.env.apple_client_id);
+  url.searchParams.append("redirect_uri", process.env.apple_redirect_uri);
+  url.searchParams.append("response_type", "code");
+  return url.toString();
+});
+
+
+
+
 Parse.Cloud.define("googleToken", async (request) => {
   const google = require("googleapis").google;
 
@@ -634,3 +646,149 @@ Parse.Cloud.define("getLatestAppRelease", async (request) => {
   return [appReleaseAndroid, appReleaseIos];
 });
 
+
+async function formatAndStoreConsentForm(consentQueryResult) {
+
+  var dataForCSV = [];
+    
+  for(let i = 0; i < consentQueryResult.length; i++) {
+    let consentData = consentQueryResult[i];
+
+    const userData = {
+      name: consentData.get("name"),
+      id: consentData.get("participantReference"),
+      consentFormFilledDate: consentData.get("createdAt")
+    };
+
+    const token = consentData.get("token");
+    const demographicsDataQuery = new Parse.Query("DemographicsData")
+    demographicsDataQuery.equalTo("token", token);
+    const demographicsDataQueryResult = await demographicsDataQuery.find({useMasterKey:true});
+    if(demographicsDataQueryResult.length == 0) {
+      userData['YearOfBirth'] = "Demographics data not found";
+    } else {
+      const ageRange = demographicsDataQueryResult[0].get("ageRange");
+      if(ageRange == null) {
+        userData['YearOfBirth'] = "Not disclosed by participant";
+      }
+      const ageRangeString = ageRange.substring(0,2);
+      userData['YearOfBirth'] = isNaN(ageRangeString) ? "Not disclosed by participant" : new Date().getFullYear() - Number(ageRangeString);
+    }
+    dataForCSV.push(userData);
+  }
+
+  let csvContent = "Id,Name,YearOfBirth,ConsentFormFilledDate\n"
+  dataForCSV.forEach(data => {
+    csvContent += `${data.id},${data.name},${data.YearOfBirth},${data.consentFormFilledDate}\n`
+  });
+
+  const currentDate = new Date()
+  let ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(currentDate);
+  let mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(currentDate);
+  let da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(currentDate);
+  const filename = `ParticipantReport${da}${mo}${ye}.csv`;
+
+  const file = new Parse.File(filename, {base64: Buffer.from(csvContent).toString('base64')});
+  
+  try {
+    var saveFileResult = await file.save();
+    if(saveFileResult.code != null) {
+      return;
+    }
+
+    console.log(file.url());
+    console.log("The file has been saved to Parse.")
+    const ConsentReport = Parse.Object.extend("ConsentReport");
+    const consentReportObject = new ConsentReport();
+    consentReportObject.set("endDate", new Date());
+    consentReportObject.set("csvFile", file);
+    await consentReportObject.save();
+
+    const newParticipantsEmailAddresses = process.env.NEW_PARTICIPANTS_REPORTS_EMAIL_LIST;
+    let newParticipantsEmailAddressesSplit = newParticipantsEmailAddresses.split(",");
+
+    const emailBody = {
+        to: newParticipantsEmailAddressesSplit,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.NEW_PARTICIPANTS_REPORTS_TEMPLATE_ID,
+        dynamicTemplateData: {
+            periodStart: consentReportObject.get("startDate"),
+            periodEnd: consentReportObject.get("endDate"),
+            csvlink: `${file.url()}`,
+        },
+    }
+
+    try {
+        console.log(emailBody);
+        const result = await sgMail.send(emailBody);
+        console.log(result);
+        console.log(`${new Date().toUTCString()} sendConfirmationEmail finished`);
+    } catch (error) {
+        console.log(`${new Date().toUTCString()} sendConfirmationEmail exception ${error}`);
+    }
+
+    return consentReportObject;
+
+  } catch(e) {
+    console.log("The file either could not be read, or could not be saved to Parse.", e)
+  }
+
+  console.log(dataForCSV);
+}
+
+Parse.Cloud.define("generateConsentReport", async (request) => {
+
+  try {
+    const consentReportQuery = new Parse.Query("ConsentReport")
+    consentReportQuery.descending('endDate');
+    const consentReportQueryResult = await consentReportQuery.find({useMasterKey:true});
+    if(consentReportQueryResult.length == 0) {
+      console.log("No consent reports found.");
+      const consentQuery = new Parse.Query("Consent")
+      const consentQueryResult = await consentQuery.find({useMasterKey:true});
+      if(consentQueryResult.length == 0) {
+        return [];
+      } else {
+        let result = await formatAndStoreConsentForm(consentQueryResult);
+        return result;
+      }
+    } else {
+      let endDate = consentReportQueryResult[0].get("endDate");
+
+      const consentQuery = new Parse.Query("Consent");
+      const consentQueryResult = await consentQuery.find({useMasterKey:true});
+
+      if(consentQueryResult.length != 0) {
+        var consentQueryFiltered = consentQueryResult.filter((element) => {
+          return element.get("createdAt") >= endDate; 
+        });
+        if(consentQueryFiltered.length == 0) {
+          return [];
+        }
+        let result = await formatAndStoreConsentForm(consentQueryFiltered);
+
+        result.set("startDate", endDate);
+        await result.save();
+
+        return result;
+      }
+      return [];
+    }
+  } catch(e) {
+    console.log(e);
+  }
+
+
+  //Check when was the last report generate
+
+
+  //Get All consent/demographic for last repost until now
+
+  //generate csv
+
+  //store in database
+
+  //send email??
+
+
+});

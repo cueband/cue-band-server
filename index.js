@@ -8,6 +8,7 @@ const args = process.argv || [];
 const test = args.some(arg => arg.includes('jasmine'));
 var dotenv = require('dotenv');
 var cors = require('cors');
+var cron = require('node-cron');
 
 const result = dotenv.config()
 if (result.error) {
@@ -94,6 +95,10 @@ app.get('/informationsheet', function (req, res) {
 
 app.get('/firmware', function (req, res) {
   res.sendFile(path.join(__dirname, '/public/firmware'));
+});
+
+app.get('/apple', function (req, res) {
+  res.sendFile(path.join(__dirname, '/public/apple.html'));
 });
 
 const port = process.env.PORT || 1337;
@@ -225,6 +230,19 @@ PostStudyQuestionnaireSchema.CreateSchema();
 
 const LeftStudySchema = require('./schemas/LeftStudySchema');
 LeftStudySchema.CreateSchema();
+
+const ConsentReportSchema = require('./schemas/ConsentReportSchema');
+ConsentReportSchema.CreateSchema();
+
+cron.schedule('5 * * * * *', async () => {
+  console.log('running a task every minute');
+  try {
+    const result = await Parse.Cloud.run("generateConsentReport", {};
+    console.log(result);
+  } catch(e) {
+    console.log(e);
+  }
+});
 
 module.exports = {
   app,
