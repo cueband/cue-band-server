@@ -237,7 +237,7 @@ ConsentReportSchema.CreateSchema();
 cron.schedule('5 * * * * *', async () => {
   console.log('running a task every minute');
   try {
-    const result = await Parse.Cloud.run("generateConsentReport", {};
+    const result = await Parse.Cloud.run("generateConsentReport", {});
     console.log(result);
   } catch(e) {
     console.log(e);
