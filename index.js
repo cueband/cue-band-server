@@ -234,6 +234,9 @@ LeftStudySchema.CreateSchema();
 const ConsentReportSchema = require('./schemas/ConsentReportSchema');
 ConsentReportSchema.CreateSchema();
 
+const RandomAllocationSchema = require('./schemas/RandomAllocationSchema');
+RandomAllocationSchema.CreateSchema();
+
 cron.schedule('5 * * * * *', async () => {
   console.log('running a task every minute');
   try {

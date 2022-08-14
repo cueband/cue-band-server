@@ -777,18 +777,65 @@ Parse.Cloud.define("generateConsentReport", async (request) => {
   } catch(e) {
     console.log(e);
   }
+});
+
+// Fisher-Yates (aka Knuth) Shuffle.
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
 
 
-  //Check when was the last report generate
+Parse.Cloud.define("generateRandomAllocations", async (request) => {
 
+  if(request.params.nAllocations == null) {
+    return "nAllocations parameter missing.";
+  }
 
-  //Get All consent/demographic for last repost until now
+  const randomAllocationQuery = new Parse.Query("RandomAllocation");
+  randomAllocationQuery.descending('order');
+  const randomAllocationResult = await randomAllocationQuery.find({useMasterKey:true});
+  let startingOrder = 0;
+  if(randomAllocationResult.length != 0) {
+    startingOrder = randomAllocationResult[0].get("order");
+    startingOrder++;
+  }
 
-  //generate csv
+  const nAllocations = request.params.nAllocations;
+  let halfAllocations = nAllocations / 2;
+  const arrayAllocations = [];
 
-  //store in database
+  for(let i = 0; i < nAllocations; i++) {
+    if(i < halfAllocations) {
+      arrayAllocations.push("CueBand-Phone");
+    } else {
+      arrayAllocations.push("Phone-CueBand");
+    }
+  }
 
-  //send email??
+  let arrayAllocationsShuffled = shuffle(arrayAllocations);
+  for(let i = 0; i < arrayAllocationsShuffled.length; i++) {
+    const RandomAllocation = Parse.Object.extend("RandomAllocation");
+    const randomAllocationObject = new RandomAllocation();
+    randomAllocationObject.set("type", arrayAllocationsShuffled[i]);
+    randomAllocationObject.set("order", startingOrder + i);
+    randomAllocationObject.set("allocated", false);
+    await randomAllocationObject.save();
+  }
 
+  return true;
 
 });
