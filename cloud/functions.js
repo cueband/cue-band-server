@@ -777,6 +777,8 @@ Parse.Cloud.define("generateConsentReport", async (request) => {
   } catch(e) {
     console.log(e);
   }
+}, {
+  requireMaster: true
 });
 
 // Fisher-Yates (aka Knuth) Shuffle.
@@ -836,6 +838,118 @@ Parse.Cloud.define("generateRandomAllocations", async (request) => {
     await randomAllocationObject.save();
   }
 
-  return true;
+  return "done";
 
+}, {
+  requireUser: true
+});
+
+Parse.Cloud.define("resendConfirmationEmail", async () => {
+  const studyInterestQuery = new Parse.Query("StudyInterest");
+  studyInterestQuery.equalTo("activated", false);
+  const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
+  if(studyInterestQueryResult.length == 0) {
+    return true;
+  }
+
+  for(let i = 0; i < studyInterestQueryResult.length; i++) {
+    const email = studyInterestQueryResult[i].get("email");
+    const confirmEmailEndpoint = '/confirm-email'; 
+    const emailBody = {
+        to: email,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.CONFIRM_EMAIL_TEMPLATE_ID,
+        dynamicTemplateData: {
+            tokenLink: `${process.env.DOMAIN_URL}${confirmEmailEndpoint}?token=${activationToken}`,
+            email,
+        },
+    }
+
+    try {
+        await sgMail.send(emailBody);
+        return true;
+    } catch (error) {
+        console.error(error);
+        if (error.response) {
+            console.error(error.response.body)
+        }
+        return false;
+    }
+  }
+  return true;
+},{
+  requireUser: true
+});
+
+Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUsers) => {
+  const studyInterestActivatedQuery = new Parse.Query("StudyInterest");
+  studyInterestActivatedQuery.equalTo("activated", true);
+
+  const studyInterestAndroidQuery = new Parse.Query("StudyInterest");
+  studyInterestAndroidQuery.equalTo("smartphoneType", "android");
+
+  const studyInterestIosQuery = new Parse.Query("StudyInterest");
+  studyInterestIosQuery.equalTo("smartphoneType", "ios");
+
+  let smartphoneTypeQuery = null;
+  if(sentToGoogleUsers && sendToIosUsers) {
+    smartphoneTypeQuery = Parse.Query.or(studyInterestAndroidQuery, studyInterestIosQuery);
+  } else if (sentToGoogleUsers) {
+    smartphoneTypeQuery = studyInterestAndroidQuery;
+  } else if (sendToIosUsers) {
+    smartphoneTypeQuery = studyInterestIosQuery;
+  }
+
+  const studyInteresQuery = Parse.Query.and(studyInterestActivatedQuery, smartphoneTypeQuery);
+  const studyInterestQueryResult = await studyInteresQuery.find({useMasterKey:true});
+  if(studyInterestQueryResult.length == 0) {
+    return true;
+  }
+
+  for(let i = 0; i < studyInterestQueryResult.length; i++) {
+
+    const email = studyInterestQueryResult[i].get("email");
+    const smartphoneType = studyInterestQueryResult[i].get("smartphoneType");
+    const studyToken = studyInterestQueryResult[i].get("studyToken");
+
+    let emailBody = null;
+    if(smartphoneType == "android") {
+      emailBody = {
+        to: email,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_ANDROID_TEMPLATE_ID,
+        dynamicTemplateData: {
+            androidLink: process.env.ANDROID_STORE_URL,
+            studyToken 
+        },
+      }
+    } else if (smartphoneType == "ios") {
+      emailBody = {
+        to: email,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_IOS_TEMPLATE_ID,
+        dynamicTemplateData: {
+            androidLink: process.env.IOS_STORE_URL,
+            studyToken 
+        },
+      }
+    } else {
+      console.log('Invalid Smartphone type');
+      return false;
+    }
+
+    try {
+        await sgMail.send(emailBody);
+        return true;
+    } catch (error) {
+        console.error(error);
+        if (error.response) {
+            console.error(error.response.body)
+        }
+        return false;
+    }
+  }
+  return true;
+},{
+  requireMaster: true
 });

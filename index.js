@@ -240,7 +240,18 @@ RandomAllocationSchema.CreateSchema();
 cron.schedule('5 * * * * *', async () => {
   console.log('running a task every minute');
   try {
-    const result = await Parse.Cloud.run("generateConsentReport", {});
+
+    const currentUser = Parse.User.current();
+    if (!currentUser) {
+      console.log("user not logged");
+      const user = await Parse.User.logIn(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
+      if(!user) {
+        console.log("Could not log in admin");
+        return;
+      }
+    } 
+
+    const result = await Parse.Cloud.run("generateConsentReport", {}, {useMasterKey: process.env.MASTER_KEY});
     console.log(result);
   } catch(e) {
     console.log(e);
