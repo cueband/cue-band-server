@@ -841,7 +841,7 @@ Parse.Cloud.define("generateRandomAllocations", async (request) => {
   return "done";
 
 }, {
-  requireUser: true
+  requireMaster: true
 });
 
 Parse.Cloud.define("resendConfirmationEmail", async () => {
@@ -878,7 +878,7 @@ Parse.Cloud.define("resendConfirmationEmail", async () => {
   }
   return true;
 },{
-  requireUser: true
+  requireMaster: true
 });
 
 Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUsers) => {
