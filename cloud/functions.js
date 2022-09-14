@@ -288,10 +288,12 @@ Parse.Cloud.define("submitAssessment", async (request) => {
   assessmentObject.set("romps8", Number(request.params.data.romps8));
   assessmentObject.set("romps9", Number(request.params.data.romps9));
   assessmentObject.set("updrs22", Number(request.params.data.updrs22));
-  assessmentObject.set("nmsqDepressionfrequency", request.params.data.nmsqdepressionfrequency);
-  assessmentObject.set("nmsqDepressionseverity", request.params.data.nmsqdepressionseverity);
-  assessmentObject.set("nmsqAnxietyfrequency", request.params.data.nmsqanxietyfrequency);
-  assessmentObject.set("nmsqAnxietyseverity", request.params.data.nmsqanxietyfrequency);
+  assessmentObject.set("nmsqpart1", request.params.data.nmsqpart1);
+  assessmentObject.set("nmsqpart2", request.params.data.nmsqpart2);
+  assessmentObject.set("nmsqpart3", request.params.data.nmsqpart3);
+  assessmentObject.set("nmsqpart4", request.params.data.nmsqpart4);
+
+  /*
   assessmentObject.set("nmsqApathyfrequency", request.params.data.nmsqanxietyseverity);
   assessmentObject.set("nmsqApathyseverity", request.params.data.nmsqapathyseverity);
   assessmentObject.set("nmsqPsychosisfrequency", request.params.data.nmsqpsychosisfrequency);
@@ -315,6 +317,8 @@ Parse.Cloud.define("submitAssessment", async (request) => {
   assessmentObject.set("nmsqOtherfrequency1", request.params.data.nmsqotherfrequency1);
   assessmentObject.set("nmsqOtherfrequency2", request.params.data.nmsqotherfrequency2);
   assessmentObject.set("nmsqOtherseverity", request.params.data.nmsqotherseverity);
+*/
+
   assessmentObject.set("pdq8", request.params.data.pdq8);
 
   console.log(assessmentObject);
@@ -953,3 +957,5 @@ Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUse
 },{
   requireMaster: true
 });
+
+

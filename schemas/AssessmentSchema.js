@@ -17,6 +17,12 @@ exports.CreateSchema = async() => {
         .addNumber("romps8")
         .addNumber("romps9")
         .addNumber("updrs22")
+        .addArray("nmsqpart1")
+        .addArray("nmsqpart2")
+        .addArray("nmsqpart3")
+        .addArray("nmsqpart4")
+      
+        /*
         .addArray("nmsqDepressionfrequency")
         .addArray("nmsqDepressionseverity")
         .addArray("nmsqAnxietyfrequency")
@@ -44,6 +50,7 @@ exports.CreateSchema = async() => {
         .addArray("nmsqOtherfrequency1")
         .addArray("nmsqOtherfrequency2")
         .addArray("nmsqOtherseverity")
+        */
         .addArray("pdq8")
         .addString("token")
         .addNumber("assessmentNumber")
