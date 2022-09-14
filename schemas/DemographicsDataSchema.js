@@ -13,6 +13,8 @@ exports.CreateSchema = async() => {
         .addString("ethnicity")
         .addString("ethnicGroup")
         .addString("gender")
+        .addString("parkinsons")
+        .addString("drooling")
         await schema.save({ useMasterKey: true });
     }
 }

@@ -444,6 +444,9 @@ Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
     demographicsDataObject.set("gender", request.params.data.f4);
   }
 
+  demographicsDataObject.set("parkinsons", request.params.data.f5);
+  demographicsDataObject.set("drooling", request.params.data.f6);
+
   const demographicsDataACL = new Parse.ACL();
   demographicsDataACL.setPublicReadAccess(false);
   demographicsDataObject.setACL(demographicsDataACL);
