@@ -961,4 +961,29 @@ Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUse
   requireMaster: true
 });
 
+Parse.Cloud.define("didConsentForm", async (request) => {
+
+  if(request.params.consentToken == null || request.params.consentToken == "") {
+    return {
+      "code": 141,
+      "error": "No token provided"
+    };
+  }
+
+  console.log("token", request.params.consentToken);
+
+  const query = new Parse.Query("Consent");
+  query.equalTo("token", request.params.consentToken);
+  const results = await query.find({useMasterKey: true});
+
+  if(results.length == 0) {
+    return false;
+  }
+  
+  const queryDemographics = new Parse.Query("DemographicsData");
+  queryDemographics.equalTo("token", request.params.consentToken);
+  const demographicsResult = await queryDemographics.find({useMasterKey: true});
+
+  return demographicsResult.length != 0;
+});
 
