@@ -2,6 +2,7 @@ const niceware = require('niceware');
 const sgClient = require('@sendgrid/client');
 const sgMail = require('@sendgrid/mail');
 var flatten = require('flat')
+const crypto = require('crypto');
 
 sgClient.setApiKey(process.env.SENDGRID_API_KEY);
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -147,8 +148,12 @@ Parse.Cloud.define("generateToken", async (request) => {
   //Check if the token already exists
   let tokenExists = true;
   while(tokenExists) {
+
+    /*
     const passphraseList = niceware.generatePassphrase(8);
     tokenString = passphraseList.join('-')
+    */
+    tokenString = `${crypto.randomInt(100000, 999999)}`;
     const query = new Parse.Query("Token");
     query.equalTo("token", tokenString);
     const results = await query.find();
