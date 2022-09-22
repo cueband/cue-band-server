@@ -992,3 +992,46 @@ Parse.Cloud.define("didConsentForm", async (request) => {
   return demographicsResult.length != 0;
 });
 
+
+Parse.Cloud.define("sendDeviceSentEmail", async (request) => {
+  
+  if(request.params.email == null || request.params.email == "" 
+      || request.params.address == null || request.params.address == ""
+      || request.params.trackingCode == null || request.params.trackingCode == "") {
+    return {
+      "code": 141,
+      "error": "No required parameters provided (email, address, trackingCode)"
+    };
+  }
+
+  let emailBody = {
+    to: request.params.email ,
+    from: process.env.EMAIL_SENDER,
+    templateId: process.env.DEVICE_SENT_TEMPLATE_ID,
+    dynamicTemplateData: {
+        email: request.params.email,
+        address: request.params.address,
+        trackingCode: request.params.trackingCode
+    },
+  }
+
+  try {
+    await sgMail.send(emailBody);
+    return {
+      "code": 200,
+    };
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+        console.error(error.response.body)
+    }
+    return  {
+      "code": 141,
+      "error": error
+    };
+  }
+},{
+  requireMaster: true
+});
+
+
