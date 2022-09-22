@@ -893,6 +893,68 @@ Parse.Cloud.define("resendConfirmationEmail", async () => {
   requireMaster: true
 });
 
+
+Parse.Cloud.define("sendStudyStartEmail", async (request) => {
+
+  if(request.params.email == null || request.params.email == "" ||
+    request.params.smartphoneType == null || request.params.smartphoneType == "" ||
+    request.params.studyToken == null || request.params.studyToken == "" ||
+    request.params.link == null || request.params.link == "") {
+    return {
+      "code": 141,
+      "error": "No required parameters provided (email, smartphoneType, studyToken, link)"
+    };
+  }
+
+    let emailBody = null;
+    if(request.params.smartphoneType == "android") {
+      emailBody = {
+        to: request.params.email,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_ANDROID_TEMPLATE_ID,
+        dynamicTemplateData: {
+            link: request.params.link,
+            studyToken: request.params.studyToken 
+        },
+      }
+    } else if (request.params.smartphoneTypee == "ios") {
+      emailBody = {
+        to: email,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_IOS_TEMPLATE_ID,
+        dynamicTemplateData: {
+            link: request.params.link,
+            studyToken: request.params.studyToken 
+        },
+      }
+    } else {
+      console.log('Invalid Smartphone type');
+      return {
+        "code": 141,
+        "error": "Invalid start phone type"
+      };
+    }
+
+    try {
+        var result = await sgMail.send(emailBody);
+        console.log(result);
+        return true;
+    } catch (error) {
+        console.error(error);
+        if (error.response) {
+            console.error(error.response.body)
+        }
+
+        return {
+          "code": 141,
+          error
+        };
+    }
+},{
+  requireMaster: true
+});
+
+/*
 Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUsers) => {
   const studyInterestActivatedQuery = new Parse.Query("StudyInterest");
   studyInterestActivatedQuery.equalTo("activated", true);
@@ -965,6 +1027,7 @@ Parse.Cloud.define("sendStudyStartEmail", async (sentToGoogleUsers, sendToIosUse
 },{
   requireMaster: true
 });
+*/
 
 Parse.Cloud.define("didConsentForm", async (request) => {
 
@@ -1012,6 +1075,46 @@ Parse.Cloud.define("sendDeviceSentEmail", async (request) => {
         email: request.params.email,
         address: request.params.address,
         trackingCode: request.params.trackingCode
+    },
+  }
+
+  try {
+    await sgMail.send(emailBody);
+    return {
+      "code": 200,
+    };
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+        console.error(error.response.body)
+    }
+    return  {
+      "code": 141,
+      "error": error
+    };
+  }
+},{
+  requireMaster: true
+});
+
+Parse.Cloud.define("sendBranchEmail", async (request) => {
+  
+  if(request.params.email == null || request.params.email == "" 
+      || request.params.branch == null || request.params.branch == "") {
+    return {
+      "code": 141,
+      "error": "No required parameters provided (email, branch)"
+    };
+  }
+
+  let templateId = request.params.branch == "trial" ? process.env.ACCEPTED_TRIAL_TEMPLATE_ID : process.env.ACCEPTED_FREELIVING_TEMPLATE_ID
+
+  let emailBody = {
+    to: request.params.email ,
+    from: process.env.EMAIL_SENDER,
+    templateId: templateId,
+    dynamicTemplateData: {
+        email: request.params.email,
     },
   }
 
