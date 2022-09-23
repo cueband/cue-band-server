@@ -894,6 +894,87 @@ Parse.Cloud.define("resendConfirmationEmail", async () => {
 });
 
 
+Parse.Cloud.define("bulkSendStudyStartEmailByID", async (request) => {
+  // TODO: IMPORTANT! This bit of code has not been tested at all. Needs to be tested on some emails before merging! 
+  try {
+    if(request.params.ids == null || request.params.ids == "" ) {
+      return {
+        "code": 141,
+        "error": "No required parameters provided (StudyInterest ID array)"
+      };
+    }
+
+    const ANDROID_LINK = "https://play.google.com/store/apps/details?id=band.cue.app";
+    const IOS_LINK = "no link";
+
+    const studyInterestQuery = new Parse.Query("StudyInterest");
+    studyInterestQuery.equalTo("activated", true);
+    studyInterestQuery.containedIn("objectId", request.params.ids);
+    const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
+
+    let androidPersonalisations = [];
+    let iOSPersonalisations = [];
+
+    studyInterestQueryResult.forEach(result => {
+      switch (result.get("smartphoneType")) {
+        case "android":
+          androidPersonalisations.push({
+            to: [result.get("email")],
+            dynamicTemplateData: {
+              link: ANDROID_LINK,
+              studyToken: result.get("studyToken") 
+            }
+          })
+          break;
+        case "ios":
+          iOSPersonalisations.push({
+            to: [result.get("email")],
+            dynamicTemplateData: {
+              link: IOS_LINK,
+              studyToken: result.get("studyToken") 
+            }
+          })
+          break;
+        default:
+          console.log(`Invalid smartphoneType for email ${result.get("email")}`)
+          break;
+      }
+    })
+
+    let messages = [];
+    if (androidPersonalisations.length > 0) {
+      messages.push({
+        personalizations: androidPersonalisations,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_ANDROID_TEMPLATE_ID
+      });
+    }
+
+    if (iOSPersonalisations.length > 0) {
+      messages.push({
+        personalizations: iOSPersonalisations,
+        from: process.env.EMAIL_SENDER,
+        templateId: process.env.STUDY_START_IOS_TEMPLATE_ID,
+      });
+    }
+
+    var result = await sgMail.send(messages);
+    console.log(result);
+    return true;
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+    return {
+      "code": 141,
+      error
+    };
+  }
+},{
+  requireMaster: true
+});
+
 Parse.Cloud.define("sendStudyStartEmail", async (request) => {
 
   if(request.params.email == null || request.params.email == "" ||
