@@ -49,7 +49,7 @@ Parse.Cloud.define("appleSignIn", async (request) => {
   const url = new URL("https://appleid.apple.com/auth/authorize");
   url.searchParams.append("client_id", process.env.apple_client_id);
   url.searchParams.append("redirect_uri", process.env.apple_redirect_uri);
-  url.searchParams.append("response_type", "code");
+  url.searchParams.append("response_type", "code id_token");
   url.searchParams.append("state", crypto.randomBytes(20).toString('hex'));
   url.searchParams.append("scope", "email");
   url.searchParams.append("response_mode", "form_post");
