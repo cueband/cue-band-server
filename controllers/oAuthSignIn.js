@@ -46,7 +46,7 @@ exports.getGoogleToken = async (req, res, next) => {
 
 
 exports.postAppleToken = async(req, res, next) => {
-    if(req.query.code == undefined)
-        return res.sendStatus(404);
+    //if(req.query.code == undefined)
+    //    return res.sendStatus(404);
     res.redirect(`cuebandapp://?state=${req.param('state')}&code=${req.param('code')}&id_token=${req.param('id_token')}&access_token=${req.param('user')}`);
 }
