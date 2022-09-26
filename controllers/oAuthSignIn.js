@@ -43,3 +43,15 @@ exports.getGoogleToken = async (req, res, next) => {
     var result = await getGoogleToken(req.query.code);
     res.redirect(`cuebandapp://?id=${result.id}&email=${result.email}&id_token=${result.id_token}&access_token=${result.access_token}`);
 }
+
+
+exports.postAppleToken = async(req, res, next) => {
+
+    console.log(req)
+
+    const html = `<h1>${req.param('state')}</h1>
+    <h1>${req.param('code')}</h1>
+    <h1>${req.param('id_token')}</h1>
+    <h1>${req.param('user')}</h1>`;
+    res.send(html);
+}
