@@ -7,6 +7,8 @@ exports.CreateSchema = async() => {
         console.log("Device Box schema not found. Creating it now.");
         schema
         .addString("boxNumber")
+        .addBoolean('isReportExported')
+        .addString('name')
         .addPointer('user', '_User')
         await schema.save({ useMasterKey: true });
     }
