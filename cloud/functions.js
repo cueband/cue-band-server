@@ -50,6 +50,9 @@ Parse.Cloud.define("appleSignIn", async (request) => {
   url.searchParams.append("client_id", process.env.apple_client_id);
   url.searchParams.append("redirect_uri", process.env.apple_redirect_uri);
   url.searchParams.append("response_type", "code");
+  url.searchParams.append("state", crypto.randomBytes(20).toString('hex'));
+  url.searchParams.append("scope", "email");
+  url.searchParams.append("response_mode", "form_post");
   return url.toString();
 });
 
