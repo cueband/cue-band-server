@@ -165,6 +165,10 @@ Parse.Cloud.define("generateToken", async (request) => {
 
   const Token = Parse.Object.extend("Token");
   const tokenObject = new Token();
+
+  const tokenObjectACL = new Parse.ACL();
+  tokenObjectACL.setPublicReadAccess(false);
+  tokenObject.setACL(tokenObjectACL);
   tokenObject.set("token", tokenString);
   
   const numberOfDaysUntilExpire = 7
@@ -284,6 +288,11 @@ Parse.Cloud.define("submitAssessment", async (request) => {
 
   const Assessment = Parse.Object.extend("Assessment");
   const assessmentObject = new Assessment();
+
+  const assessmentObjectACL = new Parse.ACL();
+  assessmentObjectACL.setPublicReadAccess(false);
+  assessmentObject.setACL(assessmentObjectACL);
+
   assessmentObject.set("token", request.params.token);
   assessmentObject.set("assessmentNumber", Number(request.params.assessmentNumber));
   assessmentObject.set("romps1", Number(request.params.data.romps1));
@@ -856,6 +865,11 @@ Parse.Cloud.define("generateRandomAllocations", async (request) => {
   for(let i = 0; i < arrayAllocationsShuffled.length; i++) {
     const RandomAllocation = Parse.Object.extend("RandomAllocation");
     const randomAllocationObject = new RandomAllocation();
+
+    const randomAllocationObjectACL = new Parse.ACL();
+    randomAllocationObjectACL.setPublicReadAccess(false);
+    randomAllocationObject.setACL(randomAllocationObjectACL);
+
     randomAllocationObject.set("type", arrayAllocationsShuffled[i]);
     randomAllocationObject.set("order", startingOrder + i);
     randomAllocationObject.set("allocated", false);
