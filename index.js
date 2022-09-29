@@ -10,6 +10,13 @@ var dotenv = require('dotenv');
 var cors = require('cors');
 var cron = require('node-cron');
 
+var FSFilesAdapter = require('@parse/fs-files-adapter');
+
+var fsAdapter = new FSFilesAdapter({
+  "filesSubDirectory": "./cueband/files" // optional, defaults to ./files
+});
+
+
 const result = dotenv.config()
 if (result.error) {
   throw result.error
@@ -40,7 +47,8 @@ const config = {
     classNames: ['Posts', 'Comments'], // List of classes to support for query subscriptions
   },
   allowCustomObjectId: false,
-  allowClientClassCreation: false
+  allowClientClassCreation: false,
+  filesAdapter: fsAdapter
 };
 // Client-keys like the javascript key or the .NET key are not necessary with parse-server
 // If you wish you require them, you can set them as options in the initialization above:
@@ -236,6 +244,12 @@ ConsentReportSchema.CreateSchema();
 
 const RandomAllocationSchema = require('./schemas/RandomAllocationSchema');
 RandomAllocationSchema.CreateSchema();
+
+const DeviceOrderReportSchema = require('./schemas/DeviceOrderReport');
+DeviceOrderReportSchema.CreateSchema();
+
+const UserStudyEmailSchema = require('./schemas/UserStudyEmailSchema');
+UserStudyEmailSchema.CreateSchema();
 
 cron.schedule('5 * * * * *', async () => {
   console.log('running a task every minute');
