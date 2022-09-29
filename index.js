@@ -252,7 +252,7 @@ DeviceOrderReportSchema.CreateSchema();
 const UserStudyEmailSchema = require('./schemas/UserStudyEmailSchema');
 UserStudyEmailSchema.CreateSchema();
 
-cron.schedule('1 * * * * *', async () => {
+cron.schedule('55 23 * * * *', async () => {
   console.log('running a task every minute');
   try {
 
