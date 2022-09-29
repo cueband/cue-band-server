@@ -704,7 +704,7 @@ async function formatAndStoreConsentForm(consentQueryResult) {
 
   const randomFileName = crypto.randomBytes(10).toString('hex');
 
-  const filename = `ParticipantReport${da}${mo}${ye}${randomFileName}.csv`;
+  const filename = `ParticipantReport${da}${mo}${ye}.${randomFileName}.csv`;
 
   const file = new Parse.File(filename, {base64: Buffer.from(csvContent).toString('base64')});
   
@@ -722,6 +722,7 @@ async function formatAndStoreConsentForm(consentQueryResult) {
     consentReportObject.set("csvFile", file);
     await consentReportObject.save();
 
+    /*
     const newParticipantsEmailAddresses = process.env.NEW_PARTICIPANTS_REPORTS_EMAIL_LIST;
     let newParticipantsEmailAddressesSplit = newParticipantsEmailAddresses.split(",");
 
@@ -743,7 +744,7 @@ async function formatAndStoreConsentForm(consentQueryResult) {
         console.log(`${new Date().toUTCString()} sendConfirmationEmail finished`);
     } catch (error) {
         console.log(`${new Date().toUTCString()} sendConfirmationEmail exception ${error}`);
-    }
+    }*/
 
     return consentReportObject;
 
