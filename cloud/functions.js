@@ -418,7 +418,7 @@ Parse.Cloud.define("submitConsentAndDemographics", async (request) => {
   consentObject.set("participantReference", participantReference);
 
   const consentObjectACL = new Parse.ACL();
-  consentObjectACL .setPublicReadAccess(false);
+  consentObjectACL.setPublicReadAccess(false);
   consentObject.setACL(consentObjectACL);
 
   let resultConsentObjectSave = await consentObject.save();
@@ -718,6 +718,11 @@ async function formatAndStoreConsentForm(consentQueryResult) {
     console.log("The file has been saved to Parse.")
     const ConsentReport = Parse.Object.extend("ConsentReport");
     const consentReportObject = new ConsentReport();
+
+    const consentReportObjectACL = new Parse.ACL();
+    consentReportObjectACL.setPublicReadAccess(false);
+    consentReportObjectACL.setACL(consentReportObjectACL);
+
     consentReportObject.set("endDate", new Date());
     consentReportObject.set("csvFile", file);
     await consentReportObject.save();

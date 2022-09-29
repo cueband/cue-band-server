@@ -12,11 +12,6 @@ var cron = require('node-cron');
 
 var FSFilesAdapter = require('@parse/fs-files-adapter');
 
-var fsAdapter = new FSFilesAdapter({
-  "filesSubDirectory": "./cueband/files" // optional, defaults to ./files
-});
-
-
 const result = dotenv.config()
 if (result.error) {
   throw result.error
@@ -30,6 +25,12 @@ for(const variable of requiredEnvVariables) {
   if(variable == undefined)
     throw Error('Required env variable missing!');
 }
+
+var fsAdapter = new FSFilesAdapter({
+  "filesSubDirectory": "./cueband/files", // optional, defaults to ./files
+  "encryptionKey": process.env.FILE_KEY
+});
+
 
 const databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
@@ -251,7 +252,7 @@ DeviceOrderReportSchema.CreateSchema();
 const UserStudyEmailSchema = require('./schemas/UserStudyEmailSchema');
 UserStudyEmailSchema.CreateSchema();
 
-cron.schedule('5 * * * * *', async () => {
+cron.schedule('1 * * * * *', async () => {
   console.log('running a task every minute');
   try {
 
