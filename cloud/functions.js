@@ -701,7 +701,10 @@ async function formatAndStoreConsentForm(consentQueryResult) {
   let ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(currentDate);
   let mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(currentDate);
   let da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(currentDate);
-  const filename = `ParticipantReport${da}${mo}${ye}.csv`;
+
+  const randomFileName = crypto.randomBytes(10).toString('hex');
+
+  const filename = `ParticipantReport${da}${mo}${ye}${randomFileName}.csv`;
 
   const file = new Parse.File(filename, {base64: Buffer.from(csvContent).toString('base64')});
   
