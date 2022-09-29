@@ -721,8 +721,8 @@ async function formatAndStoreConsentForm(consentQueryResult) {
 
     const consentReportObjectACL = new Parse.ACL();
     consentReportObjectACL.setPublicReadAccess(false);
-    consentReportObjectACL.setACL(consentReportObjectACL);
 
+    consentReportObject.setACL(consentReportObjectACL);
     consentReportObject.set("endDate", new Date());
     consentReportObject.set("csvFile", file);
     await consentReportObject.save();
