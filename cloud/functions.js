@@ -1179,12 +1179,38 @@ Parse.Cloud.define("sendBranchEmail", async (request) => {
 });
 
 
+Parse.Cloud.define("bulkTest", async (request) => {
+  
+  try {
+    const studyInterestQuery = new Parse.Query("StudyInterest");
+    studyInterestQuery.equalTo("activated", true);
+    const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
+
+    studyInterestQueryResult.forEach(result => {
+      console.log(result.get("email"), result.get("studyToken"));
+    });
+
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+    return {
+      "code": 141,
+      error
+    };
+  }
+},{
+  requireMaster: true
+});
+
+
 Parse.Cloud.define("bulkSendStudyStartEmail", async (request) => {
   
   try {
     const studyInterestQuery = new Parse.Query("StudyInterest");
     studyInterestQuery.equalTo("activated", true);
-    studyInterestQuery.setLimit(1000);
+    studyInterestQuery.limit(1000);
     studyInterestQuery.skip(100);
     const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
 
