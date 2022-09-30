@@ -1179,3 +1179,55 @@ Parse.Cloud.define("sendBranchEmail", async (request) => {
 });
 
 
+Parse.Cloud.define("bulkSendStudyStartEmail", async (request) => {
+  
+  try {
+    const studyInterestQuery = new Parse.Query("StudyInterest");
+    studyInterestQuery.equalTo("activated", true);
+ 
+    const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
+
+    let personalizations = [];
+
+    studyInterestQueryResult.forEach(result => {
+      var token = result.get("studyToken");
+      personalizations.push({
+        to: [result.get("email")],
+        dynamicTemplateData: {
+          link: `https://cue.band/app`,
+          studyToken: token,
+          faq: "https://faq.cue.band/"
+        }
+      });
+    });
+
+    let messages = [];
+    if (personalizations.length > 0) {
+      messages.push({
+        personalizations: personalizations,
+        from: {
+          email: process.env.EMAIL_SENDER,
+          name: "Cue Band",
+        },
+        templateId: process.env.STUDY_START_ANDROID_TEMPLATE_ID
+      });
+    }
+
+    var result = await sgMail.send(messages);
+    console.log(result);
+    return true;
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+    return {
+      "code": 141,
+      error
+    };
+  }
+},{
+  requireMaster: true
+});
+
+
