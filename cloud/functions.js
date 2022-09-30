@@ -1190,6 +1190,7 @@ Parse.Cloud.define("bulkSendStudyStartEmail", async (request) => {
     let personalizations = [];
 
     studyInterestQueryResult.forEach(result => {
+      console.log(result.get("email"), result.get("studyToken"));
       var token = result.get("studyToken");
       personalizations.push({
         to: [result.get("email")],
