@@ -159,7 +159,7 @@ Parse.Cloud.define("generateToken", async (request) => {
     tokenString = `${crypto.randomInt(100000, 999999)}`;
     const query = new Parse.Query("Token");
     query.equalTo("token", tokenString);
-    const results = await query.find();
+    const results = await query.find({useMasterKey:true});
     tokenExists = results.length != 0
   }
 
@@ -895,7 +895,10 @@ Parse.Cloud.define("resendConfirmationEmail", async () => {
     const confirmEmailEndpoint = '/confirm-email'; 
     const emailBody = {
         to: email,
-        from: process.env.EMAIL_SENDER,
+        from: {
+          email: process.env.EMAIL_SENDER,
+          name: "Cue Band"
+        },
         templateId: process.env.CONFIRM_EMAIL_TEMPLATE_ID,
         dynamicTemplateData: {
             tokenLink: `${process.env.DOMAIN_URL}${confirmEmailEndpoint}?token=${activationToken}`,
@@ -936,7 +939,10 @@ Parse.Cloud.define("sendStudyStartEmail", async (request) => {
     if(request.params.smartphoneType == "android") {
       emailBody = {
         to: request.params.email,
-        from: process.env.EMAIL_SENDER,
+        from: {
+          email: process.env.EMAIL_SENDER,
+          name: "Cue Band",
+        },
         templateId: process.env.STUDY_START_ANDROID_TEMPLATE_ID,
         dynamicTemplateData: {
             link: request.params.link,
@@ -946,7 +952,10 @@ Parse.Cloud.define("sendStudyStartEmail", async (request) => {
     } else if (request.params.smartphoneTypee == "ios") {
       emailBody = {
         to: email,
-        from: process.env.EMAIL_SENDER,
+        from: {
+          email: process.env.EMAIL_SENDER,
+          name: "Cue Band",
+        },
         templateId: process.env.STUDY_START_IOS_TEMPLATE_ID,
         dynamicTemplateData: {
             link: request.params.link,
@@ -1095,7 +1104,10 @@ Parse.Cloud.define("sendDeviceSentEmail", async (request) => {
 
   let emailBody = {
     to: request.params.email ,
-    from: process.env.EMAIL_SENDER,
+    from: {
+      email: process.env.EMAIL_SENDER,
+      name: "Cue Band"
+    },
     templateId: process.env.DEVICE_SENT_TEMPLATE_ID,
     dynamicTemplateData: {
         email: request.params.email,
@@ -1137,7 +1149,10 @@ Parse.Cloud.define("sendBranchEmail", async (request) => {
 
   let emailBody = {
     to: request.params.email ,
-    from: process.env.EMAIL_SENDER,
+    from: {
+      email: process.env.EMAIL_SENDER,
+      name: "Cue Band"
+    },
     templateId: templateId,
     dynamicTemplateData: {
         email: request.params.email,
