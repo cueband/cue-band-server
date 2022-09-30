@@ -1184,7 +1184,8 @@ Parse.Cloud.define("bulkSendStudyStartEmail", async (request) => {
   try {
     const studyInterestQuery = new Parse.Query("StudyInterest");
     studyInterestQuery.equalTo("activated", true);
- 
+    studyInterestQuery.setLimit(1000);
+    studyInterestQuery.skip(100);
     const studyInterestQueryResult = await studyInterestQuery.find({useMasterKey:true});
 
     let personalizations = [];
