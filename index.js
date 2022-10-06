@@ -252,13 +252,11 @@ DeviceOrderReportSchema.CreateSchema();
 const UserStudyEmailSchema = require('./schemas/UserStudyEmailSchema');
 UserStudyEmailSchema.CreateSchema();
 
-cron.schedule('55 23 * * * *', async () => {
-  console.log('running a task every minute');
+cron.schedule('55 23 * * *', async () => {
   try {
 
     const currentUser = Parse.User.current();
     if (!currentUser) {
-      console.log("user not logged");
       const user = await Parse.User.logIn(process.env.ADMIN_EMAIL, process.env.ADMIN_PASSWORD);
       if(!user) {
         console.log("Could not log in admin");

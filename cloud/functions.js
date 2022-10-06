@@ -1259,3 +1259,57 @@ Parse.Cloud.define("bulkSendStudyStartEmail", async (request) => {
 });
 
 
+Parse.Cloud.define("sendWaitingEmail", async (request) => {
+
+  if(request.params.email == null || request.params.email == "") {
+    return {
+      "code": 141,
+      "error": "No required parameters provided (email)"
+    };
+  }
+  
+  try {
+   
+    let emailBody = {
+      to: request.params.email ,
+      from: {
+        email: process.env.EMAIL_SENDER,
+        name: "Cue Band"
+      },
+      templateId: process.env.WAITING_EMAIL
+    }
+  
+    try {
+      await sgMail.send(emailBody);
+      return {
+        "code": 200,
+      };
+    } catch (error) {
+      console.error(error);
+      if (error.response) {
+          console.error(error.response.body)
+      }
+      return  {
+        "code": 141,
+        "error": error
+      };
+    }
+
+
+
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+    return {
+      "code": 141,
+      error
+    };
+  }
+},{
+  requireUser: true
+});
+
+
+
