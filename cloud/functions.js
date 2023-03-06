@@ -1359,5 +1359,88 @@ Parse.Cloud.define("sendNotAcceptedEmail", async (request) => {
 });
 
 
+//Function that calculates number of missing header blocks
+Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
+    
+    if(request.params.userId == null || request.params.userId == "") {
+      return {
+        "code": 141,
+        "error": "No required parameters provided (userId)"
+      };
+    }
+
+    try {
+      const activityLogBlockHeaderCountQuery = new Parse.Query("ActivityLogBlockHeader");
+      activityLogBlockHeaderCountQuery.equalTo("user", request.params.userId);
+      const studyInterestQueryCountResult = await activityLogBlockHeaderCountQuery.count({useMasterKey:true});
+      if(studyInterestQueryCountResult == null) {
+        return {
+          "code": 141,
+          "error": "No ActivityLogBlockHeaders found with the given user"
+        };
+      }
+      const numberOfPages = Math.ceil(studyInterestQueryCountResult / 1000);
+      
+      let localIds = [];
+      let missingSamples = [];
+
+      for(let i = 0; i < numberOfPages; i++) {
+        const activityLogBlockHeaderQuery = new Parse.Query("ActivityLogBlockHeader");
+        activityLogBlockHeaderQuery.equalTo("user", request.params.userId);
+        activityLogBlockHeaderQuery.ascending("localId");
+        activityLogBlockHeaderQuery.limit(1000);
+        activityLogBlockHeaderQuery.skip(i * 1000);
+        const studyInterestQueryResult = await activityLogBlockHeaderQuery.find({useMasterKey:true});
+        if(studyInterestQueryResult != null) {
+          localIds = localIds.concat(studyInterestQueryResult.map((elem) => elem.get("localId")));
+          missingSamples = missingSamples.concat(studyInterestQueryResult.filter((elem) => elem.get("count") < 28).map((elem) => elem.get("localId")));
+        }
+      }
+  
+      localIds = localIds.sort((a, b) => a - b);
+      localIds = [...new Set(localIds)];
+
+      const missingBlocks = [];
+      for(let i = 0; i < localIds[localIds.length - 1]; i++) {
+        let result = localIds.find((elem) => elem == i);
+        if(result == null) {
+          missingBlocks.push(i);
+        }
+      }
+
+      missingBlocks = missingBlocks.concat(missingSamples);
+      missingBlocks = [...new Set(missingBlocks)];
+
+      //add entry to MissingHeaderBlocksCounter
+      const MissingHeaderBlocksCounterQuery = new Parse.Query("MissingHeaderBlocksCounter");
+      MissingHeaderBlocksCounterQuery.equalTo("user", request.params.userId);
+      const missingHeaderBlocksCounter = await MissingHeaderBlocksCounterQuery.first({useMasterKey:true});
+      if(missingHeaderBlocksCounter == null) {
+        const MissingHeaderBlocksCounter = Parse.Object.extend("MissingHeaderBlocksCounter");
+         missingHeaderBlocksCounter = new MissingHeaderBlocksCounter();
+      }
+      missingHeaderBlocksCounter.set("user", request.params.userId);
+      missingHeaderBlocksCounter.set("missingHeaderBlocks", missingBlocks.length);
+      missingHeaderBlocksCounter.set("missingHeaderBlocksArray", missingBlocks);
+      missingHeaderBlocksCounter.set("lastUpdate", new Date());
+      await missingHeaderBlocksCounter.save(null, {useMasterKey:true});
+
+      return {
+        "code": 200,
+        "missingHeaderBlocks": missingBlocks
+      };
+    } catch (error) {
+      console.error(error);
+      if (error.response) {
+        console.error(error.response.body)
+      }
+      return {
+        "code": 141,
+        error
+      };
+    }
+});
+
+
 
 

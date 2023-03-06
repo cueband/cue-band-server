@@ -24,6 +24,7 @@ const requiredEnvVariables = [process.env.SENDGRID_API_KEY, process.env.DOMAIN_U
   process.env.CONFIRM_EMAIL_TEMPLATE_ID,  process.env.TOKEN_ERROR_REDIRECT_URL, 
   process.env.TOKEN_ACTIVATED_REDIRECT_URL, process.env.CONTACT_LIST_NAME];
 
+  
 for(const variable of requiredEnvVariables) {
   if(variable == undefined)
     throw Error('Required env variable missing!');
@@ -260,6 +261,9 @@ DeviceOrderReportSchema.CreateSchema();
 
 const UserStudyEmailSchema = require('./schemas/UserStudyEmailSchema');
 UserStudyEmailSchema.CreateSchema();
+
+const MissingHeaderBlocksCounterSchema = require('./schemas/MissingHeaderBlocksCounterSchema');
+MissingHeaderBlocksCounterSchema.CreateSchema();
 
 cron.schedule('55 23 * * *', async () => {
   try {
