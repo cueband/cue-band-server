@@ -1414,7 +1414,7 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
       //add entry to MissingHeaderBlocksCounter
       const MissingHeaderBlocksCounterQuery = new Parse.Query("MissingHeaderBlocksCounter");
       MissingHeaderBlocksCounterQuery.equalTo("user", request.params.userId);
-      const missingHeaderBlocksCounter = await MissingHeaderBlocksCounterQuery.first({useMasterKey:true});
+      let missingHeaderBlocksCounter = await MissingHeaderBlocksCounterQuery.first({useMasterKey:true});
       if(missingHeaderBlocksCounter == null) {
         const MissingHeaderBlocksCounter = Parse.Object.extend("MissingHeaderBlocksCounter");
          missingHeaderBlocksCounter = new MissingHeaderBlocksCounter();
