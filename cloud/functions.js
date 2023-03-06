@@ -1400,7 +1400,7 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
       localIds = localIds.sort((a, b) => a - b);
       localIds = [...new Set(localIds)];
 
-      const missingBlocks = [];
+      let missingBlocks = [];
       for(let i = 0; i < localIds[localIds.length - 1]; i++) {
         let result = localIds.find((elem) => elem == i);
         if(result == null) {
