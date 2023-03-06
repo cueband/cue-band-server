@@ -1369,9 +1369,14 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
       };
     }
 
+    //get user
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.equalTo("objectId", request.params.userId);
+    const user = await userQuery.first({useMasterKey:true});
+
     try {
       const activityLogBlockHeaderCountQuery = new Parse.Query("ActivityLogBlockHeader");
-      activityLogBlockHeaderCountQuery.equalTo("user", request.params.userId);
+      activityLogBlockHeaderCountQuery.equalTo("user", user);
       const studyInterestQueryCountResult = await activityLogBlockHeaderCountQuery.count({useMasterKey:true});
       if(studyInterestQueryCountResult == null) {
         return {
@@ -1386,7 +1391,7 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
 
       for(let i = 0; i < numberOfPages; i++) {
         const activityLogBlockHeaderQuery = new Parse.Query("ActivityLogBlockHeader");
-        activityLogBlockHeaderQuery.equalTo("user", request.params.userId);
+        activityLogBlockHeaderQuery.equalTo("user", user);
         activityLogBlockHeaderQuery.ascending("localId");
         activityLogBlockHeaderQuery.limit(1000);
         activityLogBlockHeaderQuery.skip(i * 1000);
