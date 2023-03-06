@@ -9,7 +9,7 @@ exports.CreateSchema = async() => {
         .addNumber("missingHeaderBlocks")
         .addArray("missingHeaderBlocksArray")
         .addDate("lastUpdate")
-        .addPointer('user', '_User');
+        .addString('user');
         await schema.save({ useMasterKey: true });
     }
 }
