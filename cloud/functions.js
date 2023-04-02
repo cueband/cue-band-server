@@ -1401,6 +1401,10 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
           missingSamples = missingSamples.concat(studyInterestQueryResult.filter((elem) => elem.get("count") < 28).map((elem) => elem.get("localId")));
         }
       }
+
+      //order by timestamp
+      //device blockId
+      //
   
       localIds = localIds.sort((a, b) => a - b);
       localIds = [...new Set(localIds)];
@@ -1415,6 +1419,20 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
 
       missingBlocks = missingBlocks.concat(missingSamples);
       missingBlocks = [...new Set(missingBlocks)];
+
+      //get lost headers blocks
+      const lostHeaderBlocksCounterQuery = new Parse.Query("LostHeaderBlocksCounter");
+      lostHeaderBlocksCounterQuery.equalTo("user", request.params.userId);
+      let lostHeaderBlocksCounter = await lostHeaderBlocksCounterQuery.first({useMasterKey:true});
+      if(lostHeaderBlocksCounter != null) {
+        let lostList = lostHeaderBlocksCounter.get('lostHeaderBlocksArray');
+        for(let i = 0; i < lostList.length; i++) {
+          let lostIndex = missingBlocks.indexOf(lostList[i]);
+          if(lostIndex != -1) {
+            missingBlocks.splice(lostIndex, 1);
+          }
+        }
+      }
 
       //add entry to MissingHeaderBlocksCounter
       const MissingHeaderBlocksCounterQuery = new Parse.Query("MissingHeaderBlocksCounter");

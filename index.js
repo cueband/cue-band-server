@@ -265,6 +265,9 @@ UserStudyEmailSchema.CreateSchema();
 const MissingHeaderBlocksCounterSchema = require('./schemas/MissingHeaderBlocksCounterSchema');
 MissingHeaderBlocksCounterSchema.CreateSchema();
 
+const LostHeaderBlocksCounterSchema = require('./schemas/LostHeaderBlocksCounter');
+LostHeaderBlocksCounterSchema.CreateSchema();
+
 cron.schedule('55 23 * * *', async () => {
   try {
 
