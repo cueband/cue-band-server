@@ -1369,6 +1369,13 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
       };
     }
 
+    return {
+      "code": 200,
+      "missingHeaderBlocks": []
+    };
+    
+    /*
+
     //get user
     const userQuery = new Parse.Query(Parse.User);
     userQuery.equalTo("objectId", request.params.userId);
@@ -1448,6 +1455,8 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
       missingHeaderBlocksCounter.set("lastUpdate", new Date());
       await missingHeaderBlocksCounter.save(null, {useMasterKey:true});
 
+      
+
       return {
         "code": 200,
         "missingHeaderBlocks": missingBlocks
@@ -1462,6 +1471,7 @@ Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
         error
       };
     }
+    */
 });
 
 
