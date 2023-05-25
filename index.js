@@ -265,6 +265,9 @@ UserStudyEmailSchema.CreateSchema();
 const MissingHeaderBlocksCounterSchema = require('./schemas/MissingHeaderBlocksCounterSchema');
 MissingHeaderBlocksCounterSchema.CreateSchema();
 
+const SentMissingHeaderBlocksCounterSchema = require('./schemas/SentMissingHeaderBlocksCounterSchema');
+SentMissingHeaderBlocksCounterSchema.CreateSchema();
+
 const LostHeaderBlocksCounterSchema = require('./schemas/LostHeaderBlocksCounterSchema');
 LostHeaderBlocksCounterSchema.CreateSchema();
 

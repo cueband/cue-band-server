@@ -1362,17 +1362,43 @@ Parse.Cloud.define("sendNotAcceptedEmail", async (request) => {
 //Function that calculates number of missing header blocks
 Parse.Cloud.define("calculateMissingHeaderBlocks", async (request) => {
     
-    if(request.params.userId == null || request.params.userId == "") {
-      return {
-        "code": 141,
-        "error": "No required parameters provided (userId)"
-      };
-    }
-
+  if(request.params.userId == null || request.params.userId == "") {
     return {
-      "code": 200,
-      "missingHeaderBlocks": []
+      "code": 141,
+      "error": "No required parameters provided (userId)"
     };
+  }
+
+  const MissingHeaderBlocksCounterQuery = new Parse.Query("MissingHeaderBlocksCounter");
+  MissingHeaderBlocksCounterQuery.equalTo("user", request.params.userId);
+  let missingHeaderBlocksCounter = await MissingHeaderBlocksCounterQuery.first({useMasterKey:true});
+
+  let missingBlocks = []
+  if(missingHeaderBlocksCounter != null && missingHeaderBlocksCounter.get("missingHeaderBlocksArray") != null && missingHeaderBlocksCounter.get("missingHeaderBlocksArray").length > 0) {
+    missingBlocks = missingHeaderBlocksCounter.get("missingHeaderBlocksArray");
+    missingHeaderBlocksCounter.set("missingHeaderBlocksArray", []);
+    missingHeaderBlocksCounter.set("missingHeaderBlocks", 0);
+    missingHeaderBlocksCounter.set("lastUpdate", new Date());
+    await missingHeaderBlocksCounter.save(null, {useMasterKey:true});
+
+    const SentMissingHeaderBlocksCounter = Parse.Object.extend("SentMissingHeaderBlocksCounter");
+    let SentMissingHeaderBlocksCounterObject = new SentMissingHeaderBlocksCounter();
+    SentMissingHeaderBlocksCounterObject.set("user", request.params.userId);
+    SentMissingHeaderBlocksCounterObject.set("missingHeaderBlocksArray", missingBlocks);
+    SentMissingHeaderBlocksCounterObject.set("missingHeaderBlocks", missingBlocks.length);
+    SentMissingHeaderBlocksCounterObject.set("lastUpdate", new Date());
+
+    const SentMissingHeaderBlocksCounterACL = new Parse.ACL();
+    SentMissingHeaderBlocksCounterACL.setPublicReadAccess(false);
+    SentMissingHeaderBlocksCounterObject.setACL(SentMissingHeaderBlocksCounterACL);
+
+    await SentMissingHeaderBlocksCounterObject.save(null, {useMasterKey:true});
+  }
+
+  return {
+    "code": 200,
+    "missingHeaderBlocks": missingBlocks
+  };
     
     /*
 
